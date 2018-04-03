@@ -1440,7 +1440,7 @@
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                     <short_desc/>
                     <long_desc/>
                 </boolopt>
@@ -1483,7 +1483,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <short_desc>Reduces chains of catch-all traps</short_desc>
                     <long_desc>
@@ -1500,7 +1500,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <short_desc>Removes empty switch statements</short_desc>
                     <long_desc>
@@ -1514,7 +1514,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <short_desc>Local splitter: one local per DU-UD web</short_desc>
                     <long_desc>
@@ -1545,7 +1545,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Only Stack Locals</name>
@@ -1571,7 +1571,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -1587,7 +1587,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Use older type assigner</name>
@@ -1640,7 +1640,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -1667,7 +1667,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -1732,7 +1732,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -1749,7 +1749,7 @@
                     <boolopt>
                         <name>Only Stack Locals</name>
                         <alias>only-stack-locals</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc>
                             Only propagate copies through locals that represent stack locations in
@@ -1770,7 +1770,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -1795,7 +1795,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -1835,7 +1835,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -1849,7 +1849,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Remove unreachable traps</name>
@@ -1894,7 +1894,7 @@
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                     <short_desc/>
                     <long_desc/>
                 </boolopt>
@@ -1946,7 +1946,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Only Stack Locals</name>
@@ -1972,7 +1972,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -2032,7 +2032,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -2079,7 +2079,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -2117,7 +2117,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -2142,7 +2142,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -2182,7 +2182,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -2196,7 +2196,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
             </phase>
@@ -2229,7 +2229,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>false</default>
+                        <default>true</default>
                     </boolopt>
                     <boolopt>
                         <name>Verbose</name>
@@ -4258,7 +4258,7 @@
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
             </phase>
             <phase>
@@ -4300,7 +4300,7 @@
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                     <short_desc/>
                     <long_desc/>
                 </boolopt>
@@ -4513,7 +4513,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>false</default>
+                    <default>true</default>
                     <short_desc/>
                     <long_desc/>
                 </boolopt>
@@ -4777,7 +4777,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
                 <sub_phase>
                     <name>Rectangular Array Finder</name>
@@ -4937,7 +4937,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
                 <boolopt>
                     <name>Shimple Node Elimination Optimizations</name>
@@ -5004,7 +5004,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
             </phase>
             <phase>
@@ -5040,7 +5040,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Prune Control Flow Graph</name>
@@ -5073,7 +5073,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
             </phase>
             <phase>
@@ -5337,7 +5337,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -5375,7 +5375,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -5392,7 +5392,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -5410,7 +5410,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -5464,7 +5464,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -5507,7 +5507,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -5522,7 +5522,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -5546,7 +5546,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -5562,7 +5562,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -5581,7 +5581,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
                 <sub_phase>
                     <name>Null Pointer Checker</name>
@@ -6136,7 +6136,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                     <short_desc/>
                     <long_desc/>
                 </boolopt>
@@ -6156,7 +6156,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -6190,7 +6190,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -6224,7 +6224,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>
@@ -6249,7 +6249,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
             </phase>
@@ -6286,7 +6286,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
                 <sub_phase>
                     <name>Load Store Optimizer</name>
@@ -6311,7 +6311,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Debug</name>
@@ -6386,7 +6386,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -6417,7 +6417,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -6431,7 +6431,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
                 <sub_phase>
@@ -6447,7 +6447,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Unsplit Original Locals</name>
@@ -6585,7 +6585,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <name>Enabled</name>
 
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                     <short_desc/>
                     <long_desc/>
                 </boolopt>
@@ -6618,7 +6618,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                         <name>Enabled</name>
                         <alias>enabled</alias>
 
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                 </sub_phase>
 
@@ -6662,7 +6662,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                         <name>Enabled</name>
                         <alias>enabled</alias>
 
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
 
                 </sub_phase>
@@ -6698,7 +6698,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                         <name>Enabled</name>
                         <alias>enabled</alias>
 
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
 
                 </sub_phase>
