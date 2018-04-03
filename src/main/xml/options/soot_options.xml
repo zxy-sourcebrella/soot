@@ -2213,7 +2213,7 @@
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
                 <sub_phase>
                     <name>Constant reflective method invocation base transformer</name>
@@ -2229,7 +2229,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Verbose</name>
@@ -2254,7 +2254,7 @@
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
             </phase>
             <radio_phase>
@@ -2272,7 +2272,7 @@
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                 </boolopt>
                 <boolopt>
                     <name>Safe forName</name>
@@ -2497,7 +2497,7 @@
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                     </boolopt>
                     <boolopt>
                         <name>Verbose</name>
@@ -4513,7 +4513,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>true</default>
+                    <default>false</default>
                     <short_desc/>
                     <long_desc/>
                 </boolopt>
@@ -4632,7 +4632,7 @@ This locking scheme aims to achieve simple fine-grained locking.
                     <boolopt>
                         <name>Enabled</name>
                         <alias>enabled</alias>
-                        <default>true</default>
+                        <default>false</default>
                         <short_desc/>
                         <long_desc/>
                     </boolopt>

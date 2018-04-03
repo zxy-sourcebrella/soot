@@ -562,24 +562,24 @@ public class DexBody {
 		 */
 
 		// Fix traps that do not catch exceptions
-		DexTrapStackFixer.v().transform(jBody);
+		//DexTrapStackFixer.v().transform(jBody);
 
 		// Sort out jump chains
-		DexJumpChainShortener.v().transform(jBody);
+		//DexJumpChainShortener.v().transform(jBody);
 
 		// Make sure that we don't have any overlapping uses due to returns
-		DexReturnInliner.v().transform(jBody);
+		//DexReturnInliner.v().transform(jBody);
 
 		// Shortcut: Reduce array initializations
-		DexArrayInitReducer.v().transform(jBody);
+		//DexArrayInitReducer.v().transform(jBody);
 
 		// split first to find undefined uses
-		getLocalSplitter().transform(jBody);
+		//getLocalSplitter().transform(jBody);
 
 		// Remove dead code and the corresponding locals before assigning types
-		getUnreachableCodeEliminator().transform(jBody);
-		DeadAssignmentEliminator.v().transform(jBody);
-		UnusedLocalEliminator.v().transform(jBody);
+		//getUnreachableCodeEliminator().transform(jBody);
+		//DeadAssignmentEliminator.v().transform(jBody);
+		//UnusedLocalEliminator.v().transform(jBody);
 
 		for (RetypeableInstruction i : instructionsToRetype)
 			i.retype(jBody);
@@ -601,11 +601,11 @@ public class DexBody {
 		if (IDalvikTyper.ENABLE_DVKTYPER) {
 
 			DexReturnValuePropagator.v().transform(jBody);
-			getCopyPopagator().transform(jBody);
+			//getCopyPopagator().transform(jBody);
 			DexNullThrowTransformer.v().transform(jBody);
 			DalvikTyper.v().typeUntypedConstrantInDiv(jBody);
-			DeadAssignmentEliminator.v().transform(jBody);
-			UnusedLocalEliminator.v().transform(jBody);
+			//DeadAssignmentEliminator.v().transform(jBody);
+			//UnusedLocalEliminator.v().transform(jBody);
 
 			DalvikTyper.v().assignType(jBody);
 			// jBody.validate();
@@ -622,7 +622,7 @@ public class DexBody {
 			// t_num.end();
 
 			DexReturnValuePropagator.v().transform(jBody);
-			getCopyPopagator().transform(jBody);
+			//getCopyPopagator().transform(jBody);
 
 			DexNullThrowTransformer.v().transform(jBody);
 
@@ -632,8 +632,8 @@ public class DexBody {
 
 			DexIfTransformer.v().transform(jBody);
 
-			DeadAssignmentEliminator.v().transform(jBody);
-			UnusedLocalEliminator.v().transform(jBody);
+			//DeadAssignmentEliminator.v().transform(jBody);
+			//UnusedLocalEliminator.v().transform(jBody);
 
 			// DexRefsChecker.v().transform(jBody);
 			DexNullArrayRefTransformer.v().transform(jBody);
@@ -646,7 +646,7 @@ public class DexBody {
 		}
 
 		// Remove "instanceof" checks on the null constant
-		DexNullInstanceofTransformer.v().transform(jBody);
+		//DexNullInstanceofTransformer.v().transform(jBody);
 
 		TypeAssigner.v().transform(jBody);
 
@@ -740,9 +740,9 @@ public class DexBody {
 
 		// We pack locals that are not used in overlapping regions. This may
 		// again lead to unused locals which we have to remove.
-		LocalPacker.v().transform(jBody);
-		UnusedLocalEliminator.v().transform(jBody);
-		LocalNameStandardizer.v().transform(jBody);
+		//LocalPacker.v().transform(jBody);
+		//UnusedLocalEliminator.v().transform(jBody);
+		//LocalNameStandardizer.v().transform(jBody);
 
 		// Some apps reference static fields as instance fields. We fix this
 		// on the fly.
@@ -754,10 +754,10 @@ public class DexBody {
 		// Inline PackManager.v().getPack("jb").apply(jBody);
 		// Keep only transformations that have not been done
 		// at this point.
-		TrapTightener.v().transform(jBody);
-		TrapMinimizer.v().transform(jBody);
+		//TrapTightener.v().transform(jBody);
+		//TrapMinimizer.v().transform(jBody);
 		// LocalSplitter.v().transform(jBody);
-		Aggregator.v().transform(jBody);
+		//Aggregator.v().transform(jBody);
 		// UnusedLocalEliminator.v().transform(jBody);
 		// TypeAssigner.v().transform(jBody);
 		// LocalPacker.v().transform(jBody);
@@ -766,19 +766,19 @@ public class DexBody {
 		// Remove if (null == null) goto x else <madness>. We can only do this
 		// after we have run the constant propagation as we might not be able
 		// to statically decide the conditions earlier.
-		ConditionalBranchFolder.v().transform(jBody);
+		//ConditionalBranchFolder.v().transform(jBody);
 
 		// Remove unnecessary typecasts
-		ConstantCastEliminator.v().transform(jBody);
-		IdentityCastEliminator.v().transform(jBody);
+		//ConstantCastEliminator.v().transform(jBody);
+		//IdentityCastEliminator.v().transform(jBody);
 
 		// Remove unnecessary logic operations
-		IdentityOperationEliminator.v().transform(jBody);
+		//IdentityOperationEliminator.v().transform(jBody);
 
 		// We need to run this transformer since the conditional branch folder
 		// might have rendered some code unreachable (well, it was unreachable
 		// before as well, but we didn't know).
-		UnreachableCodeEliminator.v().transform(jBody);
+		//UnreachableCodeEliminator.v().transform(jBody);
 
 		// Not sure whether we need this even though we do it earlier on as
 		// the earlier pass does not have type information
@@ -787,12 +787,12 @@ public class DexBody {
 		// we might have gotten new dead assignments and unused locals through
 		// copy propagation and unreachable code elimination, so we have to do
 		// this again
-		DeadAssignmentEliminator.v().transform(jBody);
-		UnusedLocalEliminator.v().transform(jBody);
-		NopEliminator.v().transform(jBody);
+		//DeadAssignmentEliminator.v().transform(jBody);
+		//UnusedLocalEliminator.v().transform(jBody);
+		//NopEliminator.v().transform(jBody);
 
 		// Remove unnecessary chains of return statements
-		DexReturnPacker.v().transform(jBody);
+		//DexReturnPacker.v().transform(jBody);
 
 		for (Unit u : jBody.getUnits()) {
 			if (u instanceof AssignStmt) {

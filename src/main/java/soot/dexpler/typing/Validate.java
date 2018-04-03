@@ -195,10 +195,10 @@ public class Validate {
             //Exception a = throw new Exception();
         }
         
-        DeadAssignmentEliminator.v().transform(b);
-        UnusedLocalEliminator.v().transform(b);
-        NopEliminator.v().transform(b);
-        UnreachableCodeEliminator.v().transform(b);
+        //DeadAssignmentEliminator.v().transform(b);
+        //UnusedLocalEliminator.v().transform(b);
+        //NopEliminator.v().transform(b);
+        //UnreachableCodeEliminator.v().transform(b);
             
     }
     

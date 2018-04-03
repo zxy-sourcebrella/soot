@@ -178,7 +178,7 @@ public class DexArrayInitReducer extends BodyTransformer {
 		}
 		
 		// Remove all locals that are no longer necessary
-		UnusedLocalEliminator.v().transform(b);
+		//UnusedLocalEliminator.v().transform(b);
 	}
 
 }

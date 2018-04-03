@@ -217,8 +217,8 @@ public class TypeAssigner extends BodyTransformer {
 		}
 
 		// should be done on a separate phase
-		DeadAssignmentEliminator.v().transform(b);
-		UnusedLocalEliminator.v().transform(b);
+		//DeadAssignmentEliminator.v().transform(b);
+		//UnusedLocalEliminator.v().transform(b);
 
 	}
 	
