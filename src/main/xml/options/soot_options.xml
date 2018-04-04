@@ -1440,14 +1440,14 @@
                 <boolopt>
                     <name>Enabled</name>
                     <alias>enabled</alias>
-                    <default>false</default>
+                    <default>true</default>
                     <short_desc/>
                     <long_desc/>
                 </boolopt>
                 <boolopt>
                     <name>Use Original Names</name>
                     <alias>use-original-names</alias>
-                    <default>false</default>
+                    <default>true</default>
                     <short_desc/>
                     <long_desc>
                         Retain the original names for local variables when the source

@@ -51,6 +51,8 @@ import org.jf.dexlib2.iface.TryBlock;
 import org.jf.dexlib2.iface.debug.DebugItem;
 import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.immutable.debug.ImmutableLineNumber;
+import org.jf.dexlib2.immutable.debug.ImmutableStartLocal;
+import org.jf.dexlib2.immutable.debug.ImmutableEndLocal;
 import org.jf.dexlib2.util.MethodUtil;
 
 import soot.Body;
@@ -148,6 +150,26 @@ public class DexBody {
 	private final DexFile dexFile;
 	private final Method method;
 
+    class LocalDebug {
+        public int startAddress;
+        public int endAddress;
+        public int register;
+        public String name;
+        public String type;
+        public String signature;
+
+        public LocalDebug(int sa, int ea, int reg, String nam, String ty, String sig)
+        {
+            this.startAddress = sa;
+            this.endAddress = ea;
+            this.register = reg;
+            this.name = nam;
+            this.type = ty;
+            this.signature = sig;
+        }
+    }
+    private final Map<Integer, LocalDebug> localDebugs;
+
 	// detect array/instructions overlapping obfuscation
 	private ArrayList<PseudoInstruction> pseudoInstructionData = new ArrayList<PseudoInstruction>();
 
@@ -191,6 +213,7 @@ public class DexBody {
 
 		instructions = new ArrayList<DexlibAbstractInstruction>();
 		instructionAtAddress = new HashMap<Integer, DexlibAbstractInstruction>();
+        localDebugs = new HashMap<Integer, LocalDebug>();
 
 		registerLocals = new Local[numRegisters];
 
@@ -218,8 +241,22 @@ public class DexBody {
 					continue;
 				}
 				ins.setLineNumber(ln.getLineNumber());
-			}
+			} else if (di instanceof ImmutableStartLocal) {
+                ImmutableStartLocal sl = (ImmutableStartLocal) di;
+                localDebugs.put(new Integer(sl.getRegister()), new LocalDebug(
+                            sl.getCodeAddress(), -1/*endAddress*/, sl.getRegister(),
+                            sl.getName(), sl.getType(), sl.getSignature()));
+                //System.out.println(method.getName()+"  start local"+ Integer.toString(sl.getRegister()) + sl.getName() + ":" + sl.getType() + sl.getCodeAddress());
+            } else if (di instanceof ImmutableEndLocal) {
+                ImmutableEndLocal el = (ImmutableEndLocal) di;
+                LocalDebug ld = localDebugs.get(el.getRegister());
+                ld.endAddress = el.getCodeAddress();
+                //System.out.println(method.getName()+"  end local" + Integer.toString(el.getRegister()) + el.getName() + ":" + el.getType() + el.getCodeAddress());
+            }
 		}
+        //System.out.println(method.getName());
+        //for (LocalDebug ld : localDebugs.values())
+        //    System.out.println(ld.register+":"+ld.startAddress+"-"+ld.endAddress+" "+ld.name+":"+ld.type);
 
 		this.dexFile = dexFile;
 		this.method = method;
@@ -541,6 +578,7 @@ public class DexBody {
 		// registerLocals = null;
 		// storeResultLocal = null;
 		instructionAtAddress.clear();
+        //localDebugs.clear();
 		// localGenerator = null;
 		deferredInstructions = null;
 		// instructionsToRetype = null;
