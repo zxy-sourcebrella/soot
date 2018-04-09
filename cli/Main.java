@@ -144,9 +144,6 @@ public class Main {
         Chain<SootClass> scs = Scene.v().getClasses();
         for (SootClass sc : scs)
             if (!sc.isJavaLibraryClass())
-            {
-                System.out.println(sc.getName() + ":" + sc.isPhantomClass());
                 translate("piggy", sc);
-            }
     }
 }
