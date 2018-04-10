@@ -22,8 +22,8 @@ while getopts "csdb" o; do
             ;;
         s) 
             pushd $SOOT_SOURCE
-            #mvn clean compile package -DskipTests
-            mvn compile package -DskipTests
+            #mvn compile package -DskipTests
+            mvn clean compile package -DskipTests
             cp $CLEANSOOT_DIRECTORY/sootclasses-trunk-jar-with-dependencies.jar $CAFEDRAGON_DIRECTORY/
             popd
             ;;
