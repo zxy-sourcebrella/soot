@@ -85,6 +85,7 @@ public class Main {
         Options.v().set_whole_program(true);
         Options.v().set_allow_phantom_refs(true);
         Options.v().set_src_prec(Options.src_prec_apk);
+        Options.v().setPhaseOption("jb.tr", "ignore-nullpointer-dereferences:true");
 
 		//when no-bodies-for-excluded is enabled, also enable phantom refs
 		if(Options.v().no_bodies_for_excluded())
@@ -128,6 +129,8 @@ public class Main {
         Configuration conf = new Configuration();
         conf.outputDirectory = new File(outdir);
         conf.omitClassWithoutSource = false;
+        conf.enableAPKAnalysis = true;
+
         CappuccinoDragon d = new CappuccinoDragon(conf);
         DexClassProvider cp = new DexClassProvider();
         SourceLocator.v()
