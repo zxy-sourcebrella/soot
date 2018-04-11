@@ -86,6 +86,7 @@ public class Main {
         Options.v().set_allow_phantom_refs(true);
         Options.v().set_src_prec(Options.src_prec_apk);
         Options.v().setPhaseOption("jb.tr", "ignore-nullpointer-dereferences:true");
+        Options.v().set_keep_line_number(true);
 
 		//when no-bodies-for-excluded is enabled, also enable phantom refs
 		if(Options.v().no_bodies_for_excluded())
