@@ -243,14 +243,28 @@ public class DexBody {
 				ins.setLineNumber(ln.getLineNumber());
 			} else if (di instanceof ImmutableStartLocal) {
                 ImmutableStartLocal sl = (ImmutableStartLocal) di;
-                localDebugs.put(new Integer(sl.getRegister()), new LocalDebug(
-                            sl.getCodeAddress(), -1/*endAddress*/, sl.getRegister(),
-                            sl.getName(), sl.getType(), sl.getSignature()));
+                LocalDebug ld = localDebugs.get(sl.getRegister());
+                if (ld == null) {
+                    localDebugs.put(new Integer(sl.getRegister()), new LocalDebug(
+                                sl.getCodeAddress(), -1/*endAddress*/, sl.getRegister(),
+                                sl.getName(), sl.getType(), sl.getSignature()));
+                } else {
+                    ld.startAddress = sl.getCodeAddress();
+                    ld.name = sl.getName();
+                    ld.type = sl.getType();
+                    ld.signature = sl.getSignature();
+                }
                 //System.out.println(method.getName()+"  start local"+ Integer.toString(sl.getRegister()) + sl.getName() + ":" + sl.getType() + sl.getCodeAddress());
             } else if (di instanceof ImmutableEndLocal) {
                 ImmutableEndLocal el = (ImmutableEndLocal) di;
                 LocalDebug ld = localDebugs.get(el.getRegister());
-                ld.endAddress = el.getCodeAddress();
+                if (ld == null) {
+                    localDebugs.put(new Integer(el.getRegister()), new LocalDebug(
+                                -1/*startAddress*/, el.getCodeAddress(), el.getRegister(),
+                                "", "", ""));
+                } else {
+                    ld.endAddress = el.getCodeAddress();
+                }
                 //System.out.println(method.getName()+"  end local" + Integer.toString(el.getRegister()) + el.getName() + ":" + el.getType() + el.getCodeAddress());
             }
 		}
