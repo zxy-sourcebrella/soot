@@ -363,7 +363,7 @@ class ConstraintCollector extends AbstractStmtSwitch {
 						lop.addParent(resolver.INT);
 					}
 
-					if (rop.type() == null) {
+					if (rop != null && rop.type() == null) {
 						rop.addParent(resolver.INT);
 					}
 				}
@@ -375,7 +375,7 @@ class ConstraintCollector extends AbstractStmtSwitch {
 						lop.addParent(resolver.INT);
 					}
 
-					if (rop.type() == null) {
+					if (rop != null && rop.type() == null) {
 						rop.addParent(resolver.INT);
 					}
 				}

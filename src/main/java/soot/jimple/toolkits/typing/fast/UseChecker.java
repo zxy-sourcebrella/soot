@@ -354,7 +354,7 @@ public class UseChecker extends AbstractStmtSwitch
 									Type newEt = getTargetType(other);
 									if (newEt != null)
 										et = newEt;
-								}
+                                }
 							}
 							else if (useStmt instanceof ReturnStmt) {
 								et = jb.getMethod().getReturnType();
@@ -363,8 +363,14 @@ public class UseChecker extends AbstractStmtSwitch
 					}
 				}
 				
-				if (at == null)
-					at = et.makeArrayType();
+				if (at == null) {
+                    if (et == null) {
+                        // NOTE hzh<huzhenghao@sbrella.com>: Simply convert it to the lhs type
+                        at = tlhs.makeArrayType();
+                    } else {
+					    at = et.makeArrayType();
+                    }
+                }
 			}
 			Type trhs = ((ArrayType)at).getElementType();
 
