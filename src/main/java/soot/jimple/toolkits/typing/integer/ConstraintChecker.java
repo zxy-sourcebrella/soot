@@ -31,9 +31,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import soot.ArrayType;
-import soot.jimple.toolkits.typing.fast.Integer1Type;
-import soot.jimple.toolkits.typing.fast.Integer127Type;
-import soot.jimple.toolkits.typing.fast.Integer32767Type;
 import soot.BooleanType;
 import soot.ByteType;
 import soot.IntType;
@@ -515,13 +512,7 @@ class ConstraintChecker extends AbstractStmtSwitch {
 		} else if (r instanceof CastExpr) {
 			CastExpr ce = (CastExpr) r;
 
-            if (ce.getCastType() instanceof Integer1Type) {
-                right = ClassHierarchy.v().BOOLEAN;
-            } else if (ce.getCastType() instanceof Integer127Type) {
-                right = ClassHierarchy.v().BYTE;
-            } else if (ce.getCastType() instanceof Integer32767Type) {
-                right = ClassHierarchy.v().SHORT;
-            } else if (ce.getCastType() instanceof IntegerType) {
+            if (ce.getCastType() instanceof IntegerType) {
 				right = ClassHierarchy.v().typeNode(ce.getCastType());
 			}
 		} else if (r instanceof InstanceOfExpr) {

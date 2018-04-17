@@ -29,6 +29,10 @@ package soot.jimple.toolkits.typing.integer;
 import soot.*;
 import java.util.*;
 
+import soot.jimple.toolkits.typing.fast.Integer1Type;
+import soot.jimple.toolkits.typing.fast.Integer127Type;
+import soot.jimple.toolkits.typing.fast.Integer32767Type;
+
 /**
  * This class encapsulates the integer type hierarchy.
  *
@@ -170,6 +174,16 @@ public class ClassHierarchy {
   
   /** Get the type node for the given type. **/
 	public TypeNode typeNode(Type type) {
+        //System.out.println("#debug : "+type.toString());
+        // Fix hzh<huzhenghao@sbrella.com>: fix fast type conversion
+        if (type instanceof Integer1Type) {
+            return BOOLEAN;
+        } else if (type instanceof Integer127Type) {
+            return BYTE;
+        } else if (type instanceof Integer32767Type) {
+            return SHORT;
+        }
+
 		if (type == null
 				|| !(type instanceof PrimType || type instanceof RefType)) {
 			throw new InternalTypingException(type);

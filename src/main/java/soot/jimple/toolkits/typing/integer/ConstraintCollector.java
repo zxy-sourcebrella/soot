@@ -26,9 +26,6 @@
 package soot.jimple.toolkits.typing.integer;
 
 import soot.ArrayType;
-import soot.jimple.toolkits.typing.fast.Integer1Type;
-import soot.jimple.toolkits.typing.fast.Integer127Type;
-import soot.jimple.toolkits.typing.fast.Integer32767Type;
 import soot.IntegerType;
 import soot.Local;
 import soot.NullType;
@@ -400,13 +397,7 @@ class ConstraintCollector extends AbstractStmtSwitch {
 		} else if (r instanceof CastExpr) {
 			CastExpr ce = (CastExpr) r;
 
-            if (ce.getCastType() instanceof Integer1Type) {
-                right = resolver.BOOLEAN;
-            } else if (ce.getCastType() instanceof Integer127Type) {
-                right = resolver.BYTE;
-            } else if (ce.getCastType() instanceof Integer32767Type) {
-                right = resolver.SHORT;
-            } else if (ce.getCastType() instanceof IntegerType) {
+            if (ce.getCastType() instanceof IntegerType) {
 				right = resolver.typeVariable(ce.getCastType());
 			}
 		} else if (r instanceof InstanceOfExpr) {
