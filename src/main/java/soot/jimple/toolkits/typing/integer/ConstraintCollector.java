@@ -25,6 +25,7 @@
 
 package soot.jimple.toolkits.typing.integer;
 
+import soot.RefType;
 import soot.ArrayType;
 import soot.IntegerType;
 import soot.Local;
@@ -507,6 +508,9 @@ class ConstraintCollector extends AbstractStmtSwitch {
 	public void caseIdentityStmt(IdentityStmt stmt) {
 		Value l = stmt.getLeftOp();
 		Value r = stmt.getRightOp();
+
+        //if (r.getType() == RefType.v("java.lang.Throwable"))
+        if (r.getType() instanceof RefType) return;
 
 		if (l instanceof Local) {
 			if (((Local) l).getType() instanceof IntegerType) {

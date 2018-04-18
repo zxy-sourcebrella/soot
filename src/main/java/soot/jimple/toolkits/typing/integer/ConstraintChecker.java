@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import soot.RefType;
 import soot.ArrayType;
 import soot.BooleanType;
 import soot.ByteType;
@@ -443,7 +444,7 @@ class ConstraintChecker extends AbstractStmtSwitch {
 					}
 				}
 
-				if (!rop.hasAncestor_1(ClassHierarchy.v().INT)) {
+				if (rop != null && !rop.hasAncestor_1(ClassHierarchy.v().INT)) {
 					if (fix) {
 						be.setOp2(insertCast(be.getOp2(), getTypeForCast(rop),
 								IntType.v(), stmt));
@@ -466,7 +467,7 @@ class ConstraintChecker extends AbstractStmtSwitch {
 					}
 				}
 
-				if (!rop.hasAncestor_1(ClassHierarchy.v().INT)) {
+				if (rop != null && !rop.hasAncestor_1(ClassHierarchy.v().INT)) {
 					if (fix) {
 						be.setOp2(insertCast(be.getOp2(), getTypeForCast(rop),
 								IntType.v(), stmt));
@@ -654,6 +655,9 @@ class ConstraintChecker extends AbstractStmtSwitch {
 	public void caseIdentityStmt(IdentityStmt stmt) {
 		Value l = stmt.getLeftOp();
 		Value r = stmt.getRightOp();
+
+        //if (r.getType() == RefType.v("java.lang.Throwable"))
+        if (r.getType() instanceof RefType) return;
 
 		if (l instanceof Local) {
 			if (((Local) l).getType() instanceof IntegerType) {
