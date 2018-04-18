@@ -119,7 +119,7 @@ class ConstraintCollector extends AbstractStmtSwitch {
 				Local local = (Local) ie.getArg(i);
 				if (local.getType() instanceof IntegerType) {
 					TypeVariable localType = resolver.typeVariable(local);
-                    if (((Local)method.parameterType(i)).getType() instanceof IntegerType)
+                    if (method.parameterType(i) instanceof IntegerType)
                       localType.addParent(resolver.typeVariable(method.parameterType(i)));
 				}
 			}
