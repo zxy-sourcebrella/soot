@@ -62,7 +62,9 @@ public class UntypedIntOrFloatConstant extends UntypedConstant {
 			if (t == null) { // if the value is only used in a if to compare against another integer, then use default type of integer
 				return this.toIntConstant();
 			}
-			throw new RuntimeException("error: expected Float type or Int-like type. Got " + t);
+            // NOTE hzh<huzhenghao@sbrella.com>: Convert All undecided to int
+            return this.toIntConstant();
+			//throw new RuntimeException("error: expected Float type or Int-like type. Got " + t);
 		}
 	}
 

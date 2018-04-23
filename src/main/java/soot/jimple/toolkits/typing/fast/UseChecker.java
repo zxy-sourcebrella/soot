@@ -369,8 +369,9 @@ public class UseChecker extends AbstractStmtSwitch
                     if (et == null) {
                         // NOTE hzh<huzhenghao@sbrella.com>: Simply convert it to the lhs type
                         // Also skip if the left-hand side value type is unknown or bottom_type
-                        if (!(tlhs instanceof UnknownType) && !(tlhs instanceof BottomType))
-                          at = tlhs.makeArrayType();
+                        if (tlhs instanceof UnknownType || tlhs instanceof BottomType) return;
+                        // Else
+                        at = tlhs.makeArrayType();
                     } else {
 					    at = et.makeArrayType();
                     }
