@@ -155,7 +155,7 @@ public class DexBody {
         public int endAddress;
         public int register;
         public String name;
-        public String type;
+        public Type type;
         public String signature;
 
         public LocalDebug(int sa, int ea, int reg, String nam, String ty, String sig)
@@ -164,7 +164,7 @@ public class DexBody {
             this.endAddress = ea;
             this.register = reg;
             this.name = nam;
-            this.type = ty;
+            this.type = DexType.toSoot(ty);
             this.signature = sig;
         }
     }
@@ -251,7 +251,7 @@ public class DexBody {
                 } else {
                     ld.startAddress = sl.getCodeAddress();
                     ld.name = sl.getName();
-                    ld.type = sl.getType();
+                    ld.type = DexType.toSoot(sl.getType());
                     ld.signature = sl.getSignature();
                 }
                 //System.out.println(method.getName()+"  start local"+ Integer.toString(sl.getRegister()) + sl.getName() + ":" + sl.getType() + sl.getCodeAddress());
@@ -441,7 +441,7 @@ public class DexBody {
 			Local thisLocal = jimple.newLocal("$u" + thisRegister, unknownType); // generateLocal(UnknownType.v());
             if (localDebugs.containsKey(thisRegister)) {
                 thisLocal.setName(localDebugs.get(thisRegister).name);
-                // TODO hzh<huzhenghao@sbrella.com>: gen.setType()
+                thisLocal.setType(localDebugs.get(thisRegister).type);
             }
 			jBody.getLocals().add(thisLocal);
 
@@ -483,7 +483,7 @@ public class DexBody {
 																					// splitting)
                 if (localDebugs.containsKey(parameterRegister)) {
                     gen.setName(localDebugs.get(parameterRegister).name);
-                    // TODO hzh<huzhenghao@sbrella.com>: gen.setType()
+                    gen.setType(localDebugs.get(parameterRegister).type);
                 }
 				jBody.getLocals().add(gen);
 
@@ -522,8 +522,8 @@ public class DexBody {
 																						// (before
 																						// splitting)
                     if (localDebugs.containsKey(parameterRegister)) {
-                        gen.setName(localDebugs.get(parameterRegister).name);
-                        // TODO hzh<huzhenghao@sbrella.com>: gen.setType()
+                        g.setName(localDebugs.get(parameterRegister).name);
+                        g.setType(localDebugs.get(parameterRegister).type);
                     }
 					jBody.getLocals().add(g);
 					registerLocals[parameterRegister] = g;
@@ -537,7 +537,7 @@ public class DexBody {
 			registerLocals[i] = jimple.newLocal("$u" + i, unknownType);
             if (localDebugs.containsKey(i)) {
                 registerLocals[i].setName(localDebugs.get(i).name);
-                // TODO hzh<huzhenghao@sbrella.com>: gen.setType()
+                registerLocals[i].setType(localDebugs.get(i).type);
             }
 			jBody.getLocals().add(registerLocals[i]);
 		}
