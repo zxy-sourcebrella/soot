@@ -42,6 +42,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
 import soot.jimple.NewArrayExpr;
+import soot.dexpler.DexTypeInference;
 
 public class FilledNewArrayRangeInstruction extends FilledArrayInstruction {
 
@@ -64,7 +65,7 @@ public class FilledNewArrayRangeInstruction extends FilledArrayInstruction {
         // NewArrayExpr needs the ElementType as it increases the array dimension by 1
         Type arrayType = ((ArrayType) t).getElementType();
         NewArrayExpr arrayExpr = Jimple.v().newNewArrayExpr(arrayType, IntConstant.v(usedRegister));
-        Local arrayLocal = body.getStoreResultLocal();
+        Local arrayLocal = DexTypeInference.applyForward(-1, t, body);
         AssignStmt assignStmt = Jimple.v().newAssignStmt(arrayLocal, arrayExpr);
         body.add (assignStmt);
 

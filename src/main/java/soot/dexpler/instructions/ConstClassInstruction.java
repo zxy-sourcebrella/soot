@@ -42,6 +42,8 @@ import soot.jimple.AssignStmt;
 import soot.jimple.ClassConstant;
 import soot.jimple.Constant;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
+import soot.Local;
 
 public class ConstClassInstruction extends DexlibAbstractInstruction {
 
@@ -60,7 +62,9 @@ public class ConstClassInstruction extends DexlibAbstractInstruction {
 		Constant cst = ClassConstant.v(tidi.getType());
 
 		int dest = ((OneRegisterInstruction) instruction).getRegisterA();
-		AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), cst);
+        Local target = DexTypeInference.applyForward(dest,
+                ((ClassConstant)cst).toSootType(), body);
+		AssignStmt assign = Jimple.v().newAssignStmt(target, cst);
 		setUnit(assign);
 		addTags(assign);
 		body.add(assign);

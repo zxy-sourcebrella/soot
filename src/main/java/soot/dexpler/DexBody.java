@@ -368,9 +368,21 @@ public class DexBody {
 		return registerLocals[num];
 	}
 
+    public void setRegisterLocal(int num, Local reg) {
+        if (num < registerLocals.length)
+            registerLocals[num] = reg;
+        else
+            throw new InvalidDalvikBytecodeException(
+                    "Trying to access register " + num + " but only " + registerLocals.length + " is/are available.");
+    }
+
 	public Local getStoreResultLocal() {
 		return storeResultLocal;
 	}
+
+    public void setStoreResultLocal(Local newlocal) {
+        storeResultLocal = newlocal;
+    }
 
 	/**
 	 * Return the instruction that is present at the byte code address.
@@ -439,9 +451,9 @@ public class DexBody {
 			int thisRegister = numRegisters - numParameterRegisters - 1;
 
 			Local thisLocal = jimple.newLocal("$u" + thisRegister, unknownType); // generateLocal(UnknownType.v());
+            thisLocal.setType(jBody.getMethod().getDeclaringClass().getType());
             if (localDebugs.containsKey(thisRegister)) {
-                thisLocal.setName(localDebugs.get(thisRegister).name);
-                thisLocal.setType(localDebugs.get(thisRegister).type);
+                thisLocal.setName("this");
             }
 			jBody.getLocals().add(thisLocal);
 
@@ -481,9 +493,9 @@ public class DexBody {
 																					// later
 																					// (before
 																					// splitting)
+                gen.setType(t);
                 if (localDebugs.containsKey(parameterRegister)) {
                     gen.setName(localDebugs.get(parameterRegister).name);
-                    gen.setType(localDebugs.get(parameterRegister).type);
                 }
 				jBody.getLocals().add(gen);
 
@@ -521,9 +533,9 @@ public class DexBody {
 																						// later
 																						// (before
 																						// splitting)
+                    g.setType(t);
                     if (localDebugs.containsKey(parameterRegister)) {
                         g.setName(localDebugs.get(parameterRegister).name);
-                        g.setType(localDebugs.get(parameterRegister).type);
                     }
 					jBody.getLocals().add(g);
 					registerLocals[parameterRegister] = g;
@@ -573,6 +585,7 @@ public class DexBody {
 				dangling = null;
 			}
 			instruction.jimplify(this);
+            if (getBody().getUnits().size() > 0)
 			if (instruction.getLineNumber() > 0)
 				prevLineNumber = instruction.getLineNumber();
 			else {
@@ -716,7 +729,7 @@ public class DexBody {
 		// Remove "instanceof" checks on the null constant
 		//DexNullInstanceofTransformer.v().transform(jBody);
 
-		TypeAssigner.v().transform(jBody);
+		//TypeAssigner.v().transform(jBody);
 
 		final RefType objectType = RefType.v("java.lang.Object");
 		if (IDalvikTyper.ENABLE_DVKTYPER) {

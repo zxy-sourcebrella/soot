@@ -41,6 +41,7 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.CastExpr;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
 
 
 public class CheckCastInstruction extends DexlibAbstractInstruction {
@@ -60,10 +61,12 @@ public class CheckCastInstruction extends DexlibAbstractInstruction {
         Type checkCastType = DexType.toSoot((TypeReference) checkCastInstr.getReference());
 
         CastExpr castExpr =  Jimple.v().newCastExpr(castValue, checkCastType);
+        Local target = DexTypeInference.applyForward(checkCastInstr.getRegisterA(),
+                checkCastType, body);
 
         //generate "x = (Type) x"
         //splitter will take care of the rest
-        AssignStmt assign = Jimple.v().newAssignStmt(castValue, castExpr);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, castExpr);
 
         setUnit(assign);
         addTags(assign);

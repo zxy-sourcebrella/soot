@@ -32,6 +32,8 @@ import soot.dexpler.IDalvikTyper;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
+import soot.Local;
+import soot.dexpler.DexTypeInference;
 
 public class MoveInstruction extends DexlibAbstractInstruction {
   
@@ -47,7 +49,9 @@ public class MoveInstruction extends DexlibAbstractInstruction {
         
         int dest = i.getRegisterA();
         int source = i.getRegisterB();
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), body.getRegisterLocal(source));
+        Local newdest = DexTypeInference.applyForward(dest,
+                body.getRegisterLocal(source).getType(), body);
+        AssignStmt assign = Jimple.v().newAssignStmt(newdest, body.getRegisterLocal(source));
         setUnit(assign);
         addTags(assign);
         body.add(assign);

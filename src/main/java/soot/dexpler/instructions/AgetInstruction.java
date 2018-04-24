@@ -39,6 +39,9 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
+import soot.Type;
+import soot.ArrayType;
 
 public class AgetInstruction extends DexlibAbstractInstruction {
   
@@ -59,6 +62,8 @@ public class AgetInstruction extends DexlibAbstractInstruction {
 
         ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
         Local l = body.getRegisterLocal(dest);
+        Type elemTy = arrayBase.getType();
+        l = DexTypeInference.applyForward(dest, elemTy, body);
         
         AssignStmt assign = Jimple.v().newAssignStmt(l, arrayRef);
         if (aGetInstr.getOpcode() == Opcode.AGET_OBJECT)

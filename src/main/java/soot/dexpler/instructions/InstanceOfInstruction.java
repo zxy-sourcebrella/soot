@@ -40,6 +40,9 @@ import soot.dexpler.IDalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceOfExpr;
 import soot.jimple.Jimple;
+import soot.IntType;
+import soot.Local;
+import soot.dexpler.DexTypeInference;
 
 public class InstanceOfInstruction extends DexlibAbstractInstruction {
 
@@ -56,7 +59,8 @@ public class InstanceOfInstruction extends DexlibAbstractInstruction {
         Type t = DexType.toSoot((TypeReference)(i.getReference()));
 
         InstanceOfExpr e = Jimple.v().newInstanceOfExpr(body.getRegisterLocal(source), t);
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), e);
+        Local target = DexTypeInference.applyForward(dest, IntType.v(), body);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, e);
         setUnit(assign);
         addTags(assign);
         body.add(assign);

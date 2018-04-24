@@ -46,6 +46,8 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.CastExpr;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
+import soot.Local;
 
 public class CastInstruction extends TaggedInstruction {
   
@@ -60,7 +62,8 @@ public class CastInstruction extends TaggedInstruction {
         int source = i.getRegisterB();
         Type targetType = getTargetType();
         CastExpr cast = Jimple.v().newCastExpr(body.getRegisterLocal(source), targetType);
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), cast);
+        Local target = DexTypeInference.applyForward(dest, targetType, body);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, cast);
         assign.addTag (getTag());
         setUnit(assign);
         addTags(assign);

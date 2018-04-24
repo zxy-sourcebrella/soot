@@ -36,6 +36,7 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.LengthExpr;
+import soot.dexpler.DexTypeInference;
 
 public class ArrayLengthInstruction extends DexlibAbstractInstruction {
   
@@ -54,8 +55,9 @@ public class ArrayLengthInstruction extends DexlibAbstractInstruction {
         Local arrayReference = body.getRegisterLocal(lengthOfArrayInstruction.getRegisterB());
 
         LengthExpr lengthExpr = Jimple.v().newLengthExpr(arrayReference);
+        Local target = DexTypeInference.applyForward(dest, IntType.v(), body);
 
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), lengthExpr);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, lengthExpr);
 
         setUnit(assign);
         addTags(assign);

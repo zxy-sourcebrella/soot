@@ -44,6 +44,8 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.NewExpr;
+import soot.Local;
+import soot.dexpler.DexTypeInference;
 
 public class NewInstanceInstruction extends DexlibAbstractInstruction {
 
@@ -58,7 +60,8 @@ public class NewInstanceInstruction extends DexlibAbstractInstruction {
         String className = dottedClassName(((TypeReference)(i.getReference())).toString());
         RefType type = RefType.v(className);
         NewExpr n = Jimple.v().newNewExpr(type);
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), n);
+        Local target = DexTypeInference.applyForward(dest, type, body);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, n);
         setUnit(assign);
         addTags(assign);
         body.add(assign);

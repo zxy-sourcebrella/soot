@@ -38,6 +38,8 @@ import soot.dexpler.tags.IntOpTag;
 import soot.jimple.AssignStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
+import soot.IntType;
+import soot.dexpler.DexTypeInference;
 
 public class BinopLitInstruction extends TaggedInstruction {
   
@@ -59,8 +61,9 @@ public class BinopLitInstruction extends TaggedInstruction {
         IntConstant constant = IntConstant.v(binOpLitInstr.getNarrowLiteral());
 
         Value expr = getExpression(source1, constant);
+        Local target = DexTypeInference.applyForward(dest, IntType.v(), body);
 
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), expr);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, expr);
         assign.addTag(getTag());
 
         setUnit(assign);
