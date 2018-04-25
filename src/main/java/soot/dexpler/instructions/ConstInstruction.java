@@ -60,7 +60,10 @@ public class ConstInstruction extends DexlibAbstractInstruction {
         // NOTE hzh<huzhenghao@sbrella.com>: Dex doesnt differenciate Int typed 0 and Pointer
         // Type. Propogate the register type explcitly to Unknown, so it will get a second
         // chance to be inferred to a correct type.
-        if (cst.equals(IntConstant.v(0)))
+        if (cst.equals(IntConstant.v(0))
+           // This is to avoid reset the type of reg after it has initialized - One case is
+           // reg type initialization based on local variable Debug Info
+           && body.getRegisterLocal(dest).getType() instanceof UnknownType)
             target = DexTypeInference.applyForward(dest, UnknownType.v(), body);
         else
             target = DexTypeInference.applyForward(dest, cst.getType(), body);

@@ -53,6 +53,9 @@ public abstract class SwitchInstruction extends PseudoInstruction implements Def
     public void jimplify(DexBody body) {
         List<Integer> targetAddrs = getTargetAddrs(body);
         for (int addr : targetAddrs) body.takeRegSnapshot(addr);
+        // hzh<huzhenghao@sbrella.com>: Also take a snapshot keyed with current address,
+        // because switch inst is deferred generation.
+        body.takeRegSnapshot(codeAddress);
 
         markerUnit = Jimple.v().newNopStmt();
         unit = markerUnit;
@@ -68,6 +71,8 @@ public abstract class SwitchInstruction extends PseudoInstruction implements Def
     }
     
     public void deferredJimplify(DexBody body) {
+        // hzh<huzhenghao@sbrella.com>: Restore Reg state before code translation
+        body.restoreRegSnapshot(codeAddress);
         int keyRegister = ((OneRegisterInstruction) instruction).getRegisterA();
         int offset = ((OffsetInstruction) instruction).getCodeOffset();
         Local key = body.getRegisterLocal(keyRegister);
