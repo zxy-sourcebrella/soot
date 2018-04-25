@@ -689,8 +689,8 @@ public class DexBody {
 		//DeadAssignmentEliminator.v().transform(jBody);
 		//UnusedLocalEliminator.v().transform(jBody);
 
-		for (RetypeableInstruction i : instructionsToRetype)
-			i.retype(jBody);
+		//for (RetypeableInstruction i : instructionsToRetype)
+		//	i.retype(jBody);
 
 		// {
 		// // remove instructions from instructions list
@@ -725,26 +725,26 @@ public class DexBody {
 			// jBody.checkLocals();
 
 		} else {
-			// t_num.start();
-			DexNumTransformer.v().transform(jBody);
-			// t_num.end();
+			//// t_num.start();
+			//DexNumTransformer.v().transform(jBody);
+			//// t_num.end();
 
-			DexReturnValuePropagator.v().transform(jBody);
-			//getCopyPopagator().transform(jBody);
+			//DexReturnValuePropagator.v().transform(jBody);
+			////getCopyPopagator().transform(jBody);
 
-			DexNullThrowTransformer.v().transform(jBody);
+			//DexNullThrowTransformer.v().transform(jBody);
 
-			// t_null.start();
-			DexNullTransformer.v().transform(jBody);
-			// t_null.end();
+			//// t_null.start();
+			//DexNullTransformer.v().transform(jBody);
+			//// t_null.end();
 
-			DexIfTransformer.v().transform(jBody);
+			//DexIfTransformer.v().transform(jBody);
 
-			//DeadAssignmentEliminator.v().transform(jBody);
-			//UnusedLocalEliminator.v().transform(jBody);
+			////DeadAssignmentEliminator.v().transform(jBody);
+			////UnusedLocalEliminator.v().transform(jBody);
 
-			// DexRefsChecker.v().transform(jBody);
-			DexNullArrayRefTransformer.v().transform(jBody);
+			//// DexRefsChecker.v().transform(jBody);
+			//DexNullArrayRefTransformer.v().transform(jBody);
 		}
 
 		if (IDalvikTyper.ENABLE_DVKTYPER) {

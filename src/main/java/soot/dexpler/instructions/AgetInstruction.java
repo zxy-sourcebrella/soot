@@ -62,7 +62,7 @@ public class AgetInstruction extends DexlibAbstractInstruction {
 
         ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
         Local l = body.getRegisterLocal(dest);
-        Type elemTy = arrayBase.getType();
+        Type elemTy = ((ArrayType) arrayBase.getType()).getElementType();
         l = DexTypeInference.applyForward(dest, elemTy, body);
         
         AssignStmt assign = Jimple.v().newAssignStmt(l, arrayRef);
