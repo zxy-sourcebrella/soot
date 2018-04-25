@@ -47,6 +47,9 @@ public abstract class ConditionalJumpInstruction extends JumpInstruction impleme
     protected abstract IfStmt ifStatement(DexBody body);
 
     public void jimplify(DexBody body) {
+
+        body.takeRegSnapshot(getTargetInstruction(body).getCodeAddress());
+
         // check if target instruction has been jimplified
         if (getTargetInstruction(body).getUnit() != null) {
             IfStmt s = ifStatement(body);

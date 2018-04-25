@@ -147,6 +147,8 @@ public abstract class DexlibAbstractInstruction {
         this.lineNumber = lineNumber;
     }
 
+    public int getCodeAddress() { return codeAddress; }
+
     /**
      * Tag the passed host with: - this instructions line number (if one is set)
      * - the original bytecode offset

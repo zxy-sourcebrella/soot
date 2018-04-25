@@ -131,6 +131,7 @@ public class DexBody {
 	// registers
 	private Local[] registerLocals;
 	private Local storeResultLocal;
+    private Map<Integer, Map<Integer, Local>> regSnapshotAtAddress;
 	private Map<Integer, DexlibAbstractInstruction> instructionAtAddress;
 
 	private List<DeferableInstruction> deferredInstructions;
@@ -216,6 +217,7 @@ public class DexBody {
         localDebugs = new HashMap<Integer, LocalDebug>();
 
 		registerLocals = new Local[numRegisters];
+        regSnapshotAtAddress = new HashMap<>();
 
 		int address = 0;
 
@@ -382,6 +384,30 @@ public class DexBody {
 
     public void setStoreResultLocal(Local newlocal) {
         storeResultLocal = newlocal;
+    }
+
+    public void takeRegSnapshot(int addr) {
+        // Only keeps the very initial state
+        if (regSnapshotAtAddress.get(addr) != null) return;
+
+        Map<Integer, Local> regs = new HashMap<>();
+        regs.put(-1, storeResultLocal);
+        for (int i = 0; i < registerLocals.length; i++)
+            regs.put(i, registerLocals[i]);
+        regSnapshotAtAddress.put(addr, regs);
+    }
+
+    public Map<Integer, Local> retrieveRegSnapshot(int addr) {
+        return regSnapshotAtAddress.get(addr);
+    }
+
+    public void restoreRegSnapshot(int addr) {
+        Map<Integer, Local> regs =  regSnapshotAtAddress.get(addr);
+        if (regs == null) return;
+
+        storeResultLocal = regs.get(-1);
+        for (int i = 0; i < registerLocals.length; i++)
+            registerLocals[i] = regs.get(i);
     }
 
 	/**
@@ -584,6 +610,7 @@ public class DexBody {
 				dangling.finalize(this, instruction);
 				dangling = null;
 			}
+            restoreRegSnapshot(instruction.getCodeAddress());
 			instruction.jimplify(this);
             if (getBody().getUnits().size() > 0)
 			if (instruction.getLineNumber() > 0)

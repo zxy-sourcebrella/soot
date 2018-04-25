@@ -122,7 +122,7 @@ public class DexMethod {
 							"Soot has detected that this method contains invalid Dalvik bytecode which would have throw an exception at runtime. ["
 									+ msg + "]");
 					TypeAssigner.v().transform(b);
-				}
+                }
 				m.setActiveBody(b);
 
 				return m.getActiveBody();

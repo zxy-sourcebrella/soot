@@ -36,6 +36,9 @@ public class GotoInstruction extends JumpInstruction implements DeferableInstruc
     }
 
     public void jimplify (DexBody body) {
+
+        body.takeRegSnapshot(getTargetInstruction(body).getCodeAddress());
+
         // check if target instruction has been jimplified
         if (getTargetInstruction(body).getUnit() != null) {
             body.add(gotoStatement());

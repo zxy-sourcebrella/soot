@@ -33,6 +33,7 @@ import soot.Unit;
 import soot.dexpler.DexBody;
 import soot.jimple.Jimple;
 import soot.jimple.Stmt;
+import java.util.List;
 
 public abstract class SwitchInstruction extends PseudoInstruction implements DeferableInstruction {
     protected Unit markerUnit;
@@ -47,11 +48,23 @@ public abstract class SwitchInstruction extends PseudoInstruction implements Def
      */
     protected abstract Stmt switchStatement(DexBody body, Instruction targetData, Local key);
 
+    protected abstract List<Integer> getSwitchTargetAddrs(DexBody body, Instruction targetData);
+
     public void jimplify(DexBody body) {
+        List<Integer> targetAddrs = getTargetAddrs(body);
+        for (int addr : targetAddrs) body.takeRegSnapshot(addr);
+
         markerUnit = Jimple.v().newNopStmt();
         unit = markerUnit;
         body.add(markerUnit);
         body.addDeferredJimplification(this);
+    }
+
+    public List<Integer> getTargetAddrs(DexBody body) {
+        int offset = ((OffsetInstruction) instruction).getCodeOffset();
+        int targetAddress = codeAddress + offset;
+        Instruction targetData = body.instructionAtAddress(targetAddress).instruction;
+        return getSwitchTargetAddrs(body, targetData);
     }
     
     public void deferredJimplify(DexBody body) {
