@@ -52,7 +52,8 @@ public class ArrayLengthInstruction extends DexlibAbstractInstruction {
         Instruction12x lengthOfArrayInstruction = (Instruction12x)instruction;
         int dest = lengthOfArrayInstruction.getRegisterA();
 
-        Local arrayReference = body.getRegisterLocal(lengthOfArrayInstruction.getRegisterB());
+        Local arrayReference = DexTypeInference.applyBackward(
+                lengthOfArrayInstruction.getRegisterB(), IntType.v().makeArrayType(), body);
 
         LengthExpr lengthExpr = Jimple.v().newLengthExpr(arrayReference);
         Local target = DexTypeInference.applyForward(dest, IntType.v(), body);

@@ -57,7 +57,8 @@ public class AgetInstruction extends DexlibAbstractInstruction {
         Instruction23x aGetInstr = (Instruction23x)instruction;
         int dest = aGetInstr.getRegisterA();
        
-        Local arrayBase = body.getRegisterLocal(aGetInstr.getRegisterB());
+        Local arrayBase = DexTypeInference.applyBackward(
+                aGetInstr.getRegisterB(), IntType.v().makeArrayType(), body);
         Local index = body.getRegisterLocal(aGetInstr.getRegisterC());
 
         ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);

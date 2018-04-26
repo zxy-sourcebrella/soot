@@ -17,6 +17,22 @@ public class DexTypeInference {
         return 32;
     }
 
+    public static Local applyBackward (int targetReg, Type assumeTy, DexBody body) {
+        boolean useResultReg = targetReg == -1/*storeResultLocal*/;
+
+        Local target;
+        if (useResultReg)
+            target = body.getStoreResultLocal();
+        else
+            target = body.getRegisterLocal(targetReg);
+
+        if (target.getType() instanceof UnknownType)
+            target.setType(assumeTy);
+        // Skip otherwise
+
+        return target;
+    }
+
     public static Local applyForward (int targetReg, Type assumeTy, DexBody body) {
 
         boolean useResultReg = targetReg == -1/*storeResultLocal*/;

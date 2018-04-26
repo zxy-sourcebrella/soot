@@ -40,6 +40,7 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
 
 public class AputInstruction extends FieldInstruction {
   
@@ -54,12 +55,13 @@ public class AputInstruction extends FieldInstruction {
 
         Instruction23x aPutInstr = (Instruction23x)instruction;
         int source = aPutInstr.getRegisterA();
+        Local sourceValue = DexTypeInference.applyBackward(source, IntType.v(), body);
 
-        Local arrayBase = body.getRegisterLocal(aPutInstr.getRegisterB());
+        Local arrayBase = DexTypeInference.applyBackward(
+                aPutInstr.getRegisterB(), sourceValue.getType().makeArrayType(), body);
         Local index = body.getRegisterLocal(aPutInstr.getRegisterC());
         ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
 
-        Local sourceValue = body.getRegisterLocal(source);
         AssignStmt assign = getAssignStmt(body, sourceValue, arrayRef);
         if (aPutInstr.getOpcode() == Opcode.APUT_OBJECT)
           assign.addTag(new ObjectOpTag());
