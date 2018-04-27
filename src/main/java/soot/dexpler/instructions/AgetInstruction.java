@@ -62,8 +62,14 @@ public class AgetInstruction extends DexlibAbstractInstruction {
         Local index = body.getRegisterLocal(aGetInstr.getRegisterC());
 
         ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
-        Local l = body.getRegisterLocal(dest);
-        Type elemTy = ((ArrayType) arrayBase.getType()).getElementType();
+        Local l;
+        Type elemTy;
+        if (arrayBase.getType() instanceof ArrayType)
+            elemTy = ((ArrayType) arrayBase.getType()).getElementType();
+        else
+            // hzh<huzhenghao@sbrella.com>: In case arrayBase is not ArrayType, reuse the
+            // dest reg type (IntType if Unknown)
+            elemTy = DexTypeInference.applyBackward(dest, IntType.v(), body).getType();
         l = DexTypeInference.applyForward(dest, elemTy, body);
         
         AssignStmt assign = Jimple.v().newAssignStmt(l, arrayRef);
