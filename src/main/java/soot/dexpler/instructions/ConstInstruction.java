@@ -30,7 +30,10 @@ import org.jf.dexlib2.iface.instruction.NarrowLiteralInstruction;
 import org.jf.dexlib2.iface.instruction.OneRegisterInstruction;
 import org.jf.dexlib2.iface.instruction.WideLiteralInstruction;
 
+import soot.Local;
+import soot.UnknownType;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.typing.DalvikTyper;
 import soot.dexpler.typing.UntypedConstant;
@@ -41,115 +44,114 @@ import soot.jimple.Constant;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
 import soot.jimple.LongConstant;
-import soot.Local;
-import soot.dexpler.DexTypeInference;
-import soot.UnknownType;
 
 public class ConstInstruction extends DexlibAbstractInstruction {
 
-    public ConstInstruction (Instruction instruction, int codeAdress) {
-        super(instruction, codeAdress);
+  public ConstInstruction(Instruction instruction, int codeAdress) {
+    super(instruction, codeAdress);
+  }
+
+  @Override
+  public void jimplify(DexBody body) {
+    int dest = ((OneRegisterInstruction) instruction).getRegisterA();
+
+    Constant cst = getConstant(dest, body);
+    Local target;
+    // NOTE hzh<huzhenghao@sbrella.com>: Dex doesnt differenciate Int typed 0 and Pointer
+    // Type. Propogate the register type explcitly to Unknown, so it will get a second
+    // chance to be inferred to a correct type.
+    if (cst.equals(IntConstant.v(0))
+        // This is to avoid reset the type of reg after it has initialized - One case is
+        // reg type initialization based on local variable Debug Info
+        && body.getRegisterLocal(dest).getType() instanceof UnknownType) {
+      target = DexTypeInference.applyForward(dest, UnknownType.v(), body);
+    } else {
+      target = DexTypeInference.applyForward(dest, cst.getType(), body);
+    }
+    AssignStmt assign = Jimple.v().newAssignStmt(target, cst);
+    setUnit(assign);
+    addTags(assign);
+    body.add(assign);
+
+    if (IDalvikTyper.ENABLE_DVKTYPER) {
+      if (cst instanceof UntypedConstant) {
+        DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());
+      } else {
+        DalvikTyper.v().setType(assign.getLeftOpBox(), cst.getType(), false);
+      }
+    }
+  }
+
+  /**
+   * Return the literal constant for this instruction.
+   *
+   * @param register
+   *          the register number to fill
+   * @param body
+   *          the body containing the instruction
+   */
+  private Constant getConstant(int dest, DexBody body) {
+
+    long literal = 0;
+
+    if (instruction instanceof WideLiteralInstruction) {
+      literal = ((WideLiteralInstruction) instruction).getWideLiteral();
+    } else if (instruction instanceof NarrowLiteralInstruction) {
+      literal = ((NarrowLiteralInstruction) instruction).getNarrowLiteral();
+    } else {
+      throw new RuntimeException("literal error: expected narrow or wide literal.");
     }
 
-    @Override
-	public void jimplify (DexBody body) {
-        int dest = ((OneRegisterInstruction) instruction).getRegisterA();
-
-        Constant cst = getConstant(dest, body);
-        Local target;
-        // NOTE hzh<huzhenghao@sbrella.com>: Dex doesnt differenciate Int typed 0 and Pointer
-        // Type. Propogate the register type explcitly to Unknown, so it will get a second
-        // chance to be inferred to a correct type.
-        if (cst.equals(IntConstant.v(0))
-           // This is to avoid reset the type of reg after it has initialized - One case is
-           // reg type initialization based on local variable Debug Info
-           && body.getRegisterLocal(dest).getType() instanceof UnknownType)
-            target = DexTypeInference.applyForward(dest, UnknownType.v(), body);
-        else
-            target = DexTypeInference.applyForward(dest, cst.getType(), body);
-        AssignStmt assign = Jimple.v().newAssignStmt(target, cst);
-        setUnit(assign);
-        addTags(assign);
-        body.add(assign);
-
+    // floats are handled later in DexBody by calling DexNumtransformer
+    Opcode opcode = instruction.getOpcode();
+    switch (opcode) {
+      case CONST:
+      case CONST_4:
+      case CONST_16:
         if (IDalvikTyper.ENABLE_DVKTYPER) {
-            if (cst instanceof UntypedConstant) {
-                DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());
-            } else {
-                DalvikTyper.v().setType(assign.getLeftOpBox(), cst.getType(), false);
-            }
-        }
-    }
-
-    /**
-     * Return the literal constant for this instruction.
-     *
-     * @param register the register number to fill
-     * @param body the body containing the instruction
-     */
-    private Constant getConstant(int dest, DexBody body) {
-
-        long literal = 0;
-
-        if (instruction instanceof WideLiteralInstruction) {
-            literal = ((WideLiteralInstruction)instruction).getWideLiteral();
-        } else if (instruction instanceof NarrowLiteralInstruction) {
-            literal = ((NarrowLiteralInstruction)instruction).getNarrowLiteral();
+          return UntypedIntOrFloatConstant.v((int) literal);
         } else {
-            throw new RuntimeException("literal error: expected narrow or wide literal.");
+          return IntConstant.v((int) literal);
         }
-        
 
-        // floats are handled later in DexBody by calling DexNumtransformer
-        Opcode opcode = instruction.getOpcode();
-        switch (opcode) {
-        case CONST:
-        case CONST_4:
-        case CONST_16:
-            if (IDalvikTyper.ENABLE_DVKTYPER) {
-                return UntypedIntOrFloatConstant.v((int)literal);
-            } else {
-                return IntConstant.v((int) literal);
-            }
-
-        case CONST_HIGH16:
-            if (IDalvikTyper.ENABLE_DVKTYPER) {
-                //
-                //return UntypedIntOrFloatConstant.v((int)literal<<16).toFloatConstant();
-                // seems that dexlib correctly puts the 16bits into the topmost bits.
-                //
-                return UntypedIntOrFloatConstant.v((int)literal);//.toFloatConstant();
-            } else {
-                return IntConstant.v((int) literal);
-            }
-
-        case CONST_WIDE_HIGH16:
-            if (IDalvikTyper.ENABLE_DVKTYPER) {
-                //return UntypedLongOrDoubleConstant.v((long)literal<<48).toDoubleConstant();
-                // seems that dexlib correctly puts the 16bits into the topmost bits.
-                //
-                return UntypedLongOrDoubleConstant.v(literal);//.toDoubleConstant();
-            } else {
-            	return LongConstant.v(literal);
-            }
-
-        case CONST_WIDE:
-        case CONST_WIDE_16:
-        case CONST_WIDE_32:
-            if (IDalvikTyper.ENABLE_DVKTYPER) {
-                return UntypedLongOrDoubleConstant.v(literal);
-            } else {
-            	return LongConstant.v(literal);
-            }
-        default:
-            throw new IllegalArgumentException("Expected a const or a const-wide instruction, got neither.");
+      case CONST_HIGH16:
+        if (IDalvikTyper.ENABLE_DVKTYPER) {
+          //
+          // return UntypedIntOrFloatConstant.v((int)literal<<16).toFloatConstant();
+          // seems that dexlib correctly puts the 16bits into the topmost bits.
+          //
+          return UntypedIntOrFloatConstant.v((int) literal);// .toFloatConstant();
+        } else {
+          return IntConstant.v((int) literal);
         }
-    }
 
-    @Override
-    boolean overridesRegister(int register) {
-        OneRegisterInstruction i = (OneRegisterInstruction) instruction;
-        int dest = i.getRegisterA();
-        return register == dest;
+      case CONST_WIDE_HIGH16:
+        if (IDalvikTyper.ENABLE_DVKTYPER) {
+          // return UntypedLongOrDoubleConstant.v((long)literal<<48).toDoubleConstant();
+          // seems that dexlib correctly puts the 16bits into the topmost bits.
+          //
+          return UntypedLongOrDoubleConstant.v(literal);// .toDoubleConstant();
+        } else {
+          return LongConstant.v(literal);
+        }
+
+      case CONST_WIDE:
+      case CONST_WIDE_16:
+      case CONST_WIDE_32:
+        if (IDalvikTyper.ENABLE_DVKTYPER) {
+          return UntypedLongOrDoubleConstant.v(literal);
+        } else {
+          return LongConstant.v(literal);
+        }
+      default:
+        throw new IllegalArgumentException("Expected a const or a const-wide instruction, got neither.");
     }
+  }
+
+  @Override
+  boolean overridesRegister(int register) {
+    OneRegisterInstruction i = (OneRegisterInstruction) instruction;
+    int dest = i.getRegisterA();
+    return register == dest;
+  }
 }

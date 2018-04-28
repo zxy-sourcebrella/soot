@@ -34,55 +34,57 @@ import soot.Local;
 import soot.Type;
 import soot.UnknownType;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.tags.ObjectOpTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
-import soot.dexpler.DexTypeInference;
 
 public class AputInstruction extends FieldInstruction {
-  
-    public AputInstruction (Instruction instruction, int codeAdress) {
-        super(instruction, codeAdress);
+
+  public AputInstruction(Instruction instruction, int codeAdress) {
+    super(instruction, codeAdress);
+  }
+
+  @Override
+  public void jimplify(DexBody body) {
+    if (!(instruction instanceof Instruction23x)) {
+      throw new IllegalArgumentException("Expected Instruction23x but got: " + instruction.getClass());
     }
 
-    @Override
-	public void jimplify (DexBody body) {
-        if(!(instruction instanceof Instruction23x))
-            throw new IllegalArgumentException("Expected Instruction23x but got: "+instruction.getClass());
+    Instruction23x aPutInstr = (Instruction23x) instruction;
+    int source = aPutInstr.getRegisterA();
+    Local sourceValue = DexTypeInference.applyBackward(source, IntType.v(), body);
 
-        Instruction23x aPutInstr = (Instruction23x)instruction;
-        int source = aPutInstr.getRegisterA();
-        Local sourceValue = DexTypeInference.applyBackward(source, IntType.v(), body);
+    Local arrayBase = DexTypeInference.applyBackward(aPutInstr.getRegisterB(), sourceValue.getType().makeArrayType(), body);
+    Local index = body.getRegisterLocal(aPutInstr.getRegisterC());
+    ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
 
-        Local arrayBase = DexTypeInference.applyBackward(
-                aPutInstr.getRegisterB(), sourceValue.getType().makeArrayType(), body);
-        Local index = body.getRegisterLocal(aPutInstr.getRegisterC());
-        ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
-
-        AssignStmt assign = getAssignStmt(body, sourceValue, arrayRef);
-        if (aPutInstr.getOpcode() == Opcode.APUT_OBJECT)
-          assign.addTag(new ObjectOpTag());
-        
-        setUnit(assign);
-        addTags(assign);
-        body.add(assign);
-        
-		if (IDalvikTyper.ENABLE_DVKTYPER) {
-          DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());
-          DalvikTyper.v().setType(arrayRef.getIndexBox(), IntType.v(), true);
-        }
+    AssignStmt assign = getAssignStmt(body, sourceValue, arrayRef);
+    if (aPutInstr.getOpcode() == Opcode.APUT_OBJECT) {
+      assign.addTag(new ObjectOpTag());
     }
 
-    @Override
-    protected Type getTargetType(DexBody body) {
-        Instruction23x aPutInstr = (Instruction23x)instruction;
-        Type t = body.getRegisterLocal(aPutInstr.getRegisterB()).getType();
-        if (t instanceof ArrayType)
-            return ((ArrayType) t).getElementType();
-        else
-            return UnknownType.v();
+    setUnit(assign);
+    addTags(assign);
+    body.add(assign);
+
+    if (IDalvikTyper.ENABLE_DVKTYPER) {
+      DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());
+      DalvikTyper.v().setType(arrayRef.getIndexBox(), IntType.v(), true);
     }
+  }
+
+  @Override
+  protected Type getTargetType(DexBody body) {
+    Instruction23x aPutInstr = (Instruction23x) instruction;
+    Type t = body.getRegisterLocal(aPutInstr.getRegisterB()).getType();
+    if (t instanceof ArrayType) {
+      return ((ArrayType) t).getElementType();
+    } else {
+      return UnknownType.v();
+    }
+  }
 }
