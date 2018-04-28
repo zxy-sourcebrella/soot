@@ -41,6 +41,16 @@ import soot.Body;
 import soot.BodyTransformer;
 import soot.G;
 import soot.Singletons;
+
+/**
+ * Driver class to run peepholes on the Baf IR. The peepholes applied must implement the Peephole interface. Peepholes are loaded dynamically by the
+ * soot runtime; the runtime reads the file peephole.dat, in order to determine which peepholes to apply.
+ * 
+ * @see Peephole
+ * @see ExamplePeephole
+ */
+
+public class PeepholeOptimizer extends BodyTransformer {
   private static final Logger logger = LoggerFactory.getLogger(PeepholeOptimizer.class);
 
   public PeepholeOptimizer(Singletons.Global g) {
