@@ -1128,7 +1128,7 @@ public class PackManager {
         streamOut = new GZIPOutputStream(streamOut);
       }
       if (format == Options.output_format_class) {
-        if (!Options.v().asm_backend()) {
+        if (Options.v().jasmin_backend()) {
           streamOut = new JasminOutputStream(streamOut);
         }
       }
@@ -1146,7 +1146,7 @@ public class PackManager {
 
     switch (format) {
       case Options.output_format_class:
-        if (Options.v().asm_backend()) {
+        if (!Options.v().jasmin_backend()) {
           new BafASMBackend(c, java_version).generateClassFile(streamOut);
           break;
         }

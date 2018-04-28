@@ -34,20 +34,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import soot.Body;
 import soot.BodyTransformer;
 import soot.G;
 import soot.Singletons;
+  private static final Logger logger = LoggerFactory.getLogger(PeepholeOptimizer.class);
 
-/**
- * Driver class to run peepholes on the Baf IR. The peepholes applied must implement the Peephole interface. Peepholes are loaded dynamically by the
- * soot runtime; the runtime reads the file peephole.dat, in order to determine which peepholes to apply.
- * 
- * @see Peephole
- * @see ExamplePeephole
- */
-
-public class PeepholeOptimizer extends BodyTransformer {
   public PeepholeOptimizer(Singletons.Global g) {
   }
 
@@ -97,6 +92,7 @@ public class PeepholeOptimizer extends BodyTransformer {
             reader.close();
             peepholeListingStream.close();
           } catch (IOException e) {
+            logger.debug(e.getMessage(), e);
           }
 
           for (String peepholeName : peepholes) {

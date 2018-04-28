@@ -50,10 +50,9 @@ public class LoopFinder extends BodyTransformer {
     return result;
   }
 
-  protected void internalTransform(Body b, String phaseName, Map options) {
-
+  protected void internalTransform(Body b, String phaseName, Map<String, String> options) {
     g = new ExceptionalUnitGraph(b);
-    MHGDominatorsFinder a = new MHGDominatorsFinder(g);
+    MHGDominatorsFinder<Unit> a = new MHGDominatorsFinder<>(g);
 
     loops = new HashMap<Stmt, List<Stmt>>();
 
