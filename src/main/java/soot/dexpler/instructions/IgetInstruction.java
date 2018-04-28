@@ -29,45 +29,44 @@ import org.jf.dexlib2.iface.instruction.ReferenceInstruction;
 import org.jf.dexlib2.iface.instruction.TwoRegisterInstruction;
 import org.jf.dexlib2.iface.reference.FieldReference;
 
+import soot.Local;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.Jimple;
-import soot.Local;
-import soot.dexpler.DexTypeInference;
 
 public class IgetInstruction extends FieldInstruction {
 
-    public IgetInstruction (Instruction instruction, int codeAdress) {
-        super(instruction, codeAdress);
-    }
+  public IgetInstruction(Instruction instruction, int codeAdress) {
+    super(instruction, codeAdress);
+  }
 
-    @Override
-	public void jimplify (DexBody body) {
-        TwoRegisterInstruction i = (TwoRegisterInstruction)instruction;
-        int dest = i.getRegisterA();
-        int object = i.getRegisterB();
-        FieldReference f = (FieldReference)((ReferenceInstruction)instruction).getReference();
-        final Jimple jimple = Jimple.v();
-        InstanceFieldRef r = jimple.newInstanceFieldRef(body.getRegisterLocal(object),
-                                                            getSootFieldRef(f));
-        Local target = DexTypeInference.applyForward(dest, r.getFieldRef().type(), body);
-        AssignStmt assign = jimple.newAssignStmt(target, r);
-        setUnit(assign);
-        addTags(assign);
-        body.add(assign);
-        
-		if (IDalvikTyper.ENABLE_DVKTYPER) {
-          DalvikTyper.v().setType(assign.getLeftOpBox(), r.getType(), false);
-        }
-    }
+  @Override
+  public void jimplify(DexBody body) {
+    TwoRegisterInstruction i = (TwoRegisterInstruction) instruction;
+    int dest = i.getRegisterA();
+    int object = i.getRegisterB();
+    FieldReference f = (FieldReference) ((ReferenceInstruction) instruction).getReference();
+    final Jimple jimple = Jimple.v();
+    InstanceFieldRef r = jimple.newInstanceFieldRef(body.getRegisterLocal(object), getSootFieldRef(f));
+    Local target = DexTypeInference.applyForward(dest, r.getFieldRef().type(), body);
+    AssignStmt assign = jimple.newAssignStmt(target, r);
+    setUnit(assign);
+    addTags(assign);
+    body.add(assign);
 
-    @Override
-    boolean overridesRegister(int register) {
-        TwoRegisterInstruction i = (TwoRegisterInstruction) instruction;
-        int dest = i.getRegisterA();
-        return register == dest;
+    if (IDalvikTyper.ENABLE_DVKTYPER) {
+      DalvikTyper.v().setType(assign.getLeftOpBox(), r.getType(), false);
     }
+  }
+
+  @Override
+  boolean overridesRegister(int register) {
+    TwoRegisterInstruction i = (TwoRegisterInstruction) instruction;
+    int dest = i.getRegisterA();
+    return register == dest;
+  }
 }

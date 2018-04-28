@@ -19,17 +19,31 @@
 
 package soot.jbco.jimpleTransformations;
 
-import soot.*;
-import soot.util.*;
+import java.util.Iterator;
+import java.util.Map;
+
+import soot.Body;
+import soot.BodyTransformer;
+import soot.G;
+import soot.Local;
+import soot.PatchingChain;
+import soot.RefType;
+import soot.Trap;
+import soot.Unit;
+import soot.UnitBox;
 import soot.jbco.IJbcoTransform;
 import soot.jbco.util.Rand;
-import soot.jimple.*;
-import java.util.*;
+import soot.jimple.CaughtExceptionRef;
+import soot.jimple.GotoStmt;
+import soot.jimple.IdentityStmt;
+import soot.jimple.Jimple;
+import soot.jimple.Stmt;
+import soot.util.Chain;
 
 /**
- * @author Michael Batchelder 
+ * @author Michael Batchelder
  * 
- * Created on 15-Feb-2006 
+ *         Created on 15-Feb-2006
  */
 public class GotoInstrumenter extends BodyTransformer implements IJbcoTransform {
 
@@ -41,27 +55,30 @@ public class GotoInstrumenter extends BodyTransformer implements IJbcoTransform 
   public String[] getDependencies() {
     return dependancies;
   }
-  
+
   public static String name = "jtp.jbco_gia";
-  
+
   public String getName() {
     return name;
   }
-  
+
   public void outputSummary() {
-    out.println("Gotos Instrumented "+gotosInstrumented);
-    out.println("Traps Added "+trapsAdded);
+    out.println("Gotos Instrumented " + gotosInstrumented);
+    out.println("Traps Added " + trapsAdded);
   }
 
   static boolean verbose = G.v().soot_options_Options().verbose();
-  
-  protected void internalTransform(Body b, String phaseName, Map<String,String> options) 
-  { 
-    if (b.getMethod().getName().indexOf("<init>")>=0) return;
-    
+
+  protected void internalTransform(Body b, String phaseName, Map<String, String> options) {
+    if (b.getMethod().getName().indexOf("<init>") >= 0) {
+      return;
+    }
+
     int weight = soot.jbco.Main.getWeight(phaseName, b.getMethod().getSignature());
-    if (weight == 0) return;
-    
+    if (weight == 0) {
+      return;
+    }
+
     PatchingChain<Unit> units = b.getUnits();
     int size = units.size();
     Unit first = null;
@@ -69,136 +86,147 @@ public class GotoInstrumenter extends BodyTransformer implements IJbcoTransform 
     while (uit.hasNext()) {
       Unit o = uit.next();
       if (o instanceof IdentityStmt) {
-        first=o;
+        first = o;
         size--;
-      } else
+      } else {
         break;
+      }
     }
-    
-    if (size < 8) return;
-    
-    if (first == null)
-      first = (Unit)units.getFirst();
-    
+
+    if (size < 8) {
+      return;
+    }
+
+    if (first == null) {
+      first = (Unit) units.getFirst();
+    }
+
     Chain<Trap> traps = b.getTraps();
     int i = 0, rand = 0;
-    while (i++ < 10)
-    {
+    while (i++ < 10) {
       rand = Rand.getInt(size);
-      if (rand<1) 
+      if (rand < 1) {
         rand = 1;
-      else if (rand == size - 1)
+      } else if (rand == size - 1) {
         rand = size - 2;
-     
-      if (isExceptionCaughtAt(units, rand + (units.size() - size), traps.iterator()))
+      }
+
+      if (isExceptionCaughtAt(units, rand + (units.size() - size), traps.iterator())) {
         continue;
+      }
       break;
     }
-    
+
     // if 10 tries, we give up
-    if (i>=10) return;
-    
-    
-    i = 0;
-    
-    if (output) {
-    	out.println("Applying Gotos to "+b.getMethod().getName());
+    if (i >= 10) {
+      return;
     }
- 
-    
-    /*Iterator it = units.iterator();
-    while(it.hasNext()) {
-      Unit x = (Unit)it.next();
-      System.out.println(i+++":  "+x.toString() + "  : "+isExceptionCaughtAt(units, x,traps.iterator()));
-    }*/
-  
+
+    i = 0;
+
+    if (output) {
+      out.println("Applying Gotos to " + b.getMethod().getName());
+    }
+
+    /*
+     * Iterator it = units.iterator(); while(it.hasNext()) { Unit x = (Unit)it.next(); System.out.println(i+++":  "+x.toString() +
+     * "  : "+isExceptionCaughtAt(units, x,traps.iterator())); }
+     */
+
     // move random-size chunk at beginning to end
-    first = (Unit)units.getSuccOf(first);
+    first = (Unit) units.getSuccOf(first);
     Unit u = first;
     do {
       Object toU[] = u.getBoxesPointingToThis().toArray();
-      for (Object element : toU)
-		u.removeBoxPointingToThis((UnitBox)element);
-      
+      for (Object element : toU) {
+        u.removeBoxPointingToThis((UnitBox) element);
+      }
+
       // unit box targets stay with a unit even if the unit is removed.
-      Unit u2 = (Unit)units.getSuccOf(u);
+      Unit u2 = (Unit) units.getSuccOf(u);
       units.remove(u);
       units.add(u);
-      
-      for (Object element : toU)
-		u.addBoxPointingToThis((UnitBox)element);
-      
+
+      for (Object element : toU) {
+        u.addBoxPointingToThis((UnitBox) element);
+      }
+
       u = u2;
     } while (++i < rand);
 
     Unit oldFirst = first;
-    // add goto as FIRST unit to point to new chunk location    
+    // add goto as FIRST unit to point to new chunk location
     if (first instanceof GotoStmt) {
-      oldFirst = ((GotoStmt)first).getTargetBox().getUnit();
-      first = Jimple.v().newGotoStmt(((GotoStmt)first).getTargetBox().getUnit());
-    } else
+      oldFirst = ((GotoStmt) first).getTargetBox().getUnit();
+      first = Jimple.v().newGotoStmt(((GotoStmt) first).getTargetBox().getUnit());
+    } else {
       first = Jimple.v().newGotoStmt(first);
-    units.insertBeforeNoRedirect(first,u);
+    }
+    units.insertBeforeNoRedirect(first, u);
 
     // add goto as LAST unit to point to new position of second chunk
-    if (((Unit)units.getLast()).fallsThrough()) {
+    if (((Unit) units.getLast()).fallsThrough()) {
       Stmt gtS = null;
-      if (u instanceof GotoStmt)
-        gtS = Jimple.v().newGotoStmt(((GotoStmt)u).getTargetBox().getUnit());
-      else
+      if (u instanceof GotoStmt) {
+        gtS = Jimple.v().newGotoStmt(((GotoStmt) u).getTargetBox().getUnit());
+      } else {
         gtS = Jimple.v().newGotoStmt(u);
-    
+      }
+
       units.add(gtS);
     }
-    
+
     RefType throwable = G.v().soot_Scene().getRefType("java.lang.Throwable");
     CaughtExceptionRef cexc = Jimple.v().newCaughtExceptionRef();
     Local excLocal = Jimple.v().newLocal("jbco_gi_caughtExceptionLocal", throwable);
     b.getLocals().add(excLocal);
-    
-    Unit handler = Jimple.v().newIdentityStmt(excLocal,cexc);
+
+    Unit handler = Jimple.v().newIdentityStmt(excLocal, cexc);
     units.add(handler);
     units.add(Jimple.v().newThrowStmt(excLocal));
-    
-    Unit trapEnd = (Unit)units.getSuccOf(oldFirst);
+
+    Unit trapEnd = (Unit) units.getSuccOf(oldFirst);
     try {
-	    while (trapEnd instanceof IdentityStmt)
-	      trapEnd = (Unit)units.getSuccOf(trapEnd);
-	    trapEnd = (Unit)units.getSuccOf(trapEnd);
-	    b.getTraps().add(Jimple.v().newTrap(throwable.getSootClass(), (Unit)units.getPredOf(oldFirst), trapEnd, handler));
-	    trapsAdded++;
-    } catch (Exception exc) {}
+      while (trapEnd instanceof IdentityStmt) {
+        trapEnd = (Unit) units.getSuccOf(trapEnd);
+      }
+      trapEnd = (Unit) units.getSuccOf(trapEnd);
+      b.getTraps().add(Jimple.v().newTrap(throwable.getSootClass(), (Unit) units.getPredOf(oldFirst), trapEnd, handler));
+      trapsAdded++;
+    } catch (Exception exc) {
+    }
     gotosInstrumented++;
   }
-  
-  private boolean isExceptionCaughtAt(Chain<Unit> units, int idx, Iterator<Trap> trapsIt)
-  {
+
+  private boolean isExceptionCaughtAt(Chain<Unit> units, int idx, Iterator<Trap> trapsIt) {
     Object u = null;
     Iterator<Unit> it = units.iterator();
-    while (it.hasNext())
-    {
-      if (idx--==0) {
+    while (it.hasNext()) {
+      if (idx-- == 0) {
         u = it.next();
         break;
       }
       it.next();
     }
-    
-    if (u == null)
-    	return false;
-  
-    //System.out.println("\r\tselected unit is "+u);
-    while (trapsIt.hasNext())
-    {
-      Trap t = (Trap)trapsIt.next();
-      it = units.iterator(t.getBeginUnit(),units.getPredOf(t.getEndUnit()));
-      while (it.hasNext())
-        if (u.equals(it.next()))
-          return true;
-      if (t.getEndUnit().equals(u))
-        return true;
+
+    if (u == null) {
+      return false;
     }
-    
+
+    // System.out.println("\r\tselected unit is "+u);
+    while (trapsIt.hasNext()) {
+      Trap t = (Trap) trapsIt.next();
+      it = units.iterator(t.getBeginUnit(), units.getPredOf(t.getEndUnit()));
+      while (it.hasNext()) {
+        if (u.equals(it.next())) {
+          return true;
+        }
+      }
+      if (t.getEndUnit().equals(u)) {
+        return true;
+      }
+    }
+
     return false;
   }
 }

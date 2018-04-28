@@ -40,62 +40,63 @@ import soot.Type;
 import soot.Value;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.NewArrayExpr;
-import soot.dexpler.DexTypeInference;
 
 public class NewArrayInstruction extends DexlibAbstractInstruction {
 
-    public NewArrayInstruction (Instruction instruction, int codeAdress) {
-        super(instruction, codeAdress);
+  public NewArrayInstruction(Instruction instruction, int codeAdress) {
+    super(instruction, codeAdress);
+  }
+
+  @Override
+  public void jimplify(DexBody body) {
+
+    if (!(instruction instanceof Instruction22c)) {
+      throw new IllegalArgumentException("Expected Instruction22c but got: " + instruction.getClass());
     }
 
-    @Override
-	public void jimplify (DexBody body) {
+    Instruction22c newArray = (Instruction22c) instruction;
+    int dest = newArray.getRegisterA();
 
-        if(!(instruction instanceof Instruction22c))
-            throw new IllegalArgumentException("Expected Instruction22c but got: "+instruction.getClass());
+    Value size = body.getRegisterLocal(newArray.getRegisterB());
 
-        Instruction22c newArray = (Instruction22c)instruction;
-        int dest = newArray.getRegisterA();
+    Type t = DexType.toSoot((TypeReference) newArray.getReference());
+    // NewArrayExpr needs the ElementType as it increases the array dimension by 1
+    Type arrayType = ((ArrayType) t).getElementType();
 
-        Value size = body.getRegisterLocal(newArray.getRegisterB());
+    NewArrayExpr newArrayExpr = Jimple.v().newNewArrayExpr(arrayType, size);
 
-        Type t = DexType.toSoot((TypeReference) newArray.getReference());
-        // NewArrayExpr needs the ElementType as it increases the array dimension by 1
-        Type arrayType = ((ArrayType) t).getElementType();
-        
-        NewArrayExpr newArrayExpr = Jimple.v().newNewArrayExpr(arrayType, size);
+    Local l = DexTypeInference.applyForward(dest, t, body);
+    AssignStmt assign = Jimple.v().newAssignStmt(l, newArrayExpr);
 
-        Local l = DexTypeInference.applyForward(dest, t, body);
-        AssignStmt assign = Jimple.v().newAssignStmt(l, newArrayExpr);
+    setUnit(assign);
+    addTags(assign);
+    body.add(assign);
 
-        setUnit(assign);
-        addTags(assign);
-        body.add(assign);
-
-		if (IDalvikTyper.ENABLE_DVKTYPER) {
-          DalvikTyper.v().setType(newArrayExpr.getSizeBox(), IntType.v(), true);
-          DalvikTyper.v().setType(assign.getLeftOpBox(), newArrayExpr.getType(), false);
-        }
+    if (IDalvikTyper.ENABLE_DVKTYPER) {
+      DalvikTyper.v().setType(newArrayExpr.getSizeBox(), IntType.v(), true);
+      DalvikTyper.v().setType(assign.getLeftOpBox(), newArrayExpr.getType(), false);
     }
+  }
 
-    @Override
-    boolean overridesRegister(int register) {
-        TwoRegisterInstruction i = (TwoRegisterInstruction) instruction;
-        int dest = i.getRegisterA();
-        return register == dest;
-    }
+  @Override
+  boolean overridesRegister(int register) {
+    TwoRegisterInstruction i = (TwoRegisterInstruction) instruction;
+    int dest = i.getRegisterA();
+    return register == dest;
+  }
 
-    @Override
-    public Set<Type> introducedTypes() {
-        ReferenceInstruction i = (ReferenceInstruction) instruction;
+  @Override
+  public Set<Type> introducedTypes() {
+    ReferenceInstruction i = (ReferenceInstruction) instruction;
 
-        Set<Type> types = new HashSet<Type>();
-        types.add(DexType.toSoot((TypeReference) i.getReference()));
-        return types;
-    }
+    Set<Type> types = new HashSet<Type>();
+    types.add(DexType.toSoot((TypeReference) i.getReference()));
+    return types;
+  }
 }
