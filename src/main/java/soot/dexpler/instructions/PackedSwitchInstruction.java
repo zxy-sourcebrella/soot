@@ -75,6 +75,24 @@ public class PackedSwitchInstruction extends SwitchInstruction {
     }
 
     @Override
+    protected List<Integer> getSwitchTargetAddrs(DexBody body, Instruction targetData) {
+        PackedSwitchPayload i = (PackedSwitchPayload) targetData;
+        List<? extends SwitchElement> seList = i.getSwitchElements();
+        List<Integer> targets = new ArrayList<>();
+
+        // the default target always follows the switch statement
+        int defaultTargetAddress = codeAddress + instruction.getCodeUnits();
+        targets.add(body.instructionAtAddress(defaultTargetAddress).getCodeAddress());
+
+        for(SwitchElement se: seList) {
+          int offset = se.getOffset();
+          targets.add(body.instructionAtAddress(codeAddress + offset).getCodeAddress());
+        }
+
+        return targets;
+    }
+
+    @Override
     public void computeDataOffsets(DexBody body) {
     }
 

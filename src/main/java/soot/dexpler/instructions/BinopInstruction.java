@@ -38,6 +38,11 @@ import soot.dexpler.tags.IntOpTag;
 import soot.dexpler.tags.LongOpTag;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
+import soot.IntType;
+import soot.LongType;
+import soot.FloatType;
+import soot.DoubleType;
 
 public class BinopInstruction extends TaggedInstruction {
   
@@ -57,8 +62,18 @@ public class BinopInstruction extends TaggedInstruction {
         Local source2 = body.getRegisterLocal(binOpInstr.getRegisterC());
 
         Value expr = getExpression(source1, source2);
+        Local target = body.getRegisterLocal(dest);
+        if (getTag() instanceof LongOpTag) {
+            target = DexTypeInference.applyForward(dest, LongType.v(), body);
+        } else if (getTag() instanceof FloatOpTag) {
+            target = DexTypeInference.applyForward(dest, FloatType.v(), body);
+        } else if (getTag() instanceof DoubleOpTag) {
+            target = DexTypeInference.applyForward(dest, DoubleType.v(), body);
+        } else if (getTag() instanceof IntOpTag) {
+            target = DexTypeInference.applyForward(dest, IntType.v(), body);
+        }
 
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), expr);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, expr);
         assign.addTag(getTag());
         
         setUnit(assign);

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import soot.RefType;
 import soot.ArrayType;
 import soot.BooleanType;
 import soot.ByteType;
@@ -145,7 +146,8 @@ class ConstraintChecker extends AbstractStmtSwitch {
 		for (int i = 0; i < ie.getArgCount(); i++) {
 			if (ie.getArg(i) instanceof Local) {
 				Local local = (Local) ie.getArg(i);
-				if (local.getType() instanceof IntegerType) {
+				if (local.getType() instanceof IntegerType
+                  && method.parameterType(i) instanceof IntegerType) {
 					if (!ClassHierarchy.v().typeNode(local.getType())
 							.hasAncestor_1(ClassHierarchy.v().typeNode(method.parameterType(i)))) {
 						if (fix) {
@@ -443,7 +445,7 @@ class ConstraintChecker extends AbstractStmtSwitch {
 					}
 				}
 
-				if (!rop.hasAncestor_1(ClassHierarchy.v().INT)) {
+				if (rop != null && !rop.hasAncestor_1(ClassHierarchy.v().INT)) {
 					if (fix) {
 						be.setOp2(insertCast(be.getOp2(), getTypeForCast(rop),
 								IntType.v(), stmt));
@@ -466,7 +468,7 @@ class ConstraintChecker extends AbstractStmtSwitch {
 					}
 				}
 
-				if (!rop.hasAncestor_1(ClassHierarchy.v().INT)) {
+				if (rop != null && !rop.hasAncestor_1(ClassHierarchy.v().INT)) {
 					if (fix) {
 						be.setOp2(insertCast(be.getOp2(), getTypeForCast(rop),
 								IntType.v(), stmt));
@@ -512,7 +514,7 @@ class ConstraintChecker extends AbstractStmtSwitch {
 		} else if (r instanceof CastExpr) {
 			CastExpr ce = (CastExpr) r;
 
-			if (ce.getCastType() instanceof IntegerType) {
+            if (ce.getCastType() instanceof IntegerType) {
 				right = ClassHierarchy.v().typeNode(ce.getCastType());
 			}
 		} else if (r instanceof InstanceOfExpr) {
@@ -654,6 +656,9 @@ class ConstraintChecker extends AbstractStmtSwitch {
 	public void caseIdentityStmt(IdentityStmt stmt) {
 		Value l = stmt.getLeftOp();
 		Value r = stmt.getRightOp();
+
+        //if (r.getType() == RefType.v("java.lang.Throwable"))
+        if (r.getType() instanceof RefType) return;
 
 		if (l instanceof Local) {
 			if (((Local) l).getType() instanceof IntegerType) {

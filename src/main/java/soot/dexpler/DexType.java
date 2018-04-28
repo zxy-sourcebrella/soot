@@ -120,6 +120,7 @@ public class DexType {
      *
      */
     private static Type toSoot(String typeDescriptor, int pos) {
+        if (typeDescriptor == "") return UnknownType.v();
         Type type;
         char typeDesignator = typeDescriptor.charAt(pos);
         // see https://code.google.com/p/smali/wiki/TypesMethodsAndFields

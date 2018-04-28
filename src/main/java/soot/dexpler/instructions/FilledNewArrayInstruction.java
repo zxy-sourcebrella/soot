@@ -42,6 +42,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
 import soot.jimple.NewArrayExpr;
+import soot.dexpler.DexTypeInference;
 
 public class FilledNewArrayInstruction extends FilledArrayInstruction {
 
@@ -71,7 +72,7 @@ public class FilledNewArrayInstruction extends FilledArrayInstruction {
         Type arrayType = ((ArrayType) t).getElementType();
         NewArrayExpr arrayExpr = Jimple.v().newNewArrayExpr(arrayType, IntConstant.v(usedRegister));
         // new local generated intentional, will be moved to real register by MoveResult
-        Local arrayLocal = body.getStoreResultLocal();
+        Local arrayLocal = DexTypeInference.applyForward(-1, t, body);
         AssignStmt assign = Jimple.v().newAssignStmt(arrayLocal, arrayExpr);
         body.add (assign);
         for (int i = 0; i < usedRegister; i++) {

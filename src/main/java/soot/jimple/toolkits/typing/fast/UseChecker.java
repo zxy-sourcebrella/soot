@@ -89,6 +89,8 @@ import soot.jimple.XorExpr;
 import soot.toolkits.scalar.LocalDefs;
 import soot.toolkits.scalar.LocalUses;
 import soot.toolkits.scalar.UnitValueBoxPair;
+import soot.jimple.toolkits.typing.fast.BottomType;
+import soot.UnknownType;
 
 /**
  * This checks all uses against the rules in Jimple, except some uses are not
@@ -354,7 +356,7 @@ public class UseChecker extends AbstractStmtSwitch
 									Type newEt = getTargetType(other);
 									if (newEt != null)
 										et = newEt;
-								}
+                                }
 							}
 							else if (useStmt instanceof ReturnStmt) {
 								et = jb.getMethod().getReturnType();
@@ -363,8 +365,17 @@ public class UseChecker extends AbstractStmtSwitch
 					}
 				}
 				
-				if (at == null)
-					at = et.makeArrayType();
+				if (at == null) {
+                    if (et == null) {
+                        // NOTE hzh<huzhenghao@sbrella.com>: Simply convert it to the lhs type
+                        // Also skip if the left-hand side value type is unknown or bottom_type
+                        if (tlhs instanceof UnknownType || tlhs instanceof BottomType) return;
+                        // Else
+                        at = tlhs.makeArrayType();
+                    } else {
+					    at = et.makeArrayType();
+                    }
+                }
 			}
 			Type trhs = ((ArrayType)at).getElementType();
 

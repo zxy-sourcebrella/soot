@@ -33,6 +33,8 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.internal.JAssignStmt;
+import soot.Local;
+import soot.dexpler.DexTypeInference;
 
 public class MoveResultInstruction extends DexlibAbstractInstruction {
 //    private Local local;
@@ -55,7 +57,9 @@ public class MoveResultInstruction extends DexlibAbstractInstruction {
 //            assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), expr);
 //        else
 //            throw new RuntimeException("Neither local and expr are set to move.");
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), body.getStoreResultLocal());
+        Local target = DexTypeInference.applyForward(dest,
+                body.getStoreResultLocal().getType(), body);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, body.getStoreResultLocal());
         setUnit(assign);
         addTags(assign);
         body.add(assign);

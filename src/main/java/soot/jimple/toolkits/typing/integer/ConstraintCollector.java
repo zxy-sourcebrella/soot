@@ -25,6 +25,7 @@
 
 package soot.jimple.toolkits.typing.integer;
 
+import soot.RefType;
 import soot.ArrayType;
 import soot.IntegerType;
 import soot.Local;
@@ -118,7 +119,8 @@ class ConstraintCollector extends AbstractStmtSwitch {
 				Local local = (Local) ie.getArg(i);
 				if (local.getType() instanceof IntegerType) {
 					TypeVariable localType = resolver.typeVariable(local);
-					localType.addParent(resolver.typeVariable(method.parameterType(i)));
+                    if (method.parameterType(i) instanceof IntegerType)
+                      localType.addParent(resolver.typeVariable(method.parameterType(i)));
 				}
 			}
 		}
@@ -360,7 +362,7 @@ class ConstraintCollector extends AbstractStmtSwitch {
 						lop.addParent(resolver.INT);
 					}
 
-					if (rop.type() == null) {
+					if (rop != null && rop.type() == null) {
 						rop.addParent(resolver.INT);
 					}
 				}
@@ -372,7 +374,7 @@ class ConstraintCollector extends AbstractStmtSwitch {
 						lop.addParent(resolver.INT);
 					}
 
-					if (rop.type() == null) {
+					if (rop != null && rop.type() == null) {
 						rop.addParent(resolver.INT);
 					}
 				}
@@ -397,7 +399,7 @@ class ConstraintCollector extends AbstractStmtSwitch {
 		} else if (r instanceof CastExpr) {
 			CastExpr ce = (CastExpr) r;
 
-			if (ce.getCastType() instanceof IntegerType) {
+            if (ce.getCastType() instanceof IntegerType) {
 				right = resolver.typeVariable(ce.getCastType());
 			}
 		} else if (r instanceof InstanceOfExpr) {
@@ -507,6 +509,9 @@ class ConstraintCollector extends AbstractStmtSwitch {
 	public void caseIdentityStmt(IdentityStmt stmt) {
 		Value l = stmt.getLeftOp();
 		Value r = stmt.getRightOp();
+
+        //if (r.getType() == RefType.v("java.lang.Throwable"))
+        if (r.getType() instanceof RefType) return;
 
 		if (l instanceof Local) {
 			if (((Local) l).getType() instanceof IntegerType) {

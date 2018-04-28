@@ -4,6 +4,9 @@
 
 ## [0.0.1] - 2018.4.3
 ## Changed
+- Replace fast type inference in Dexpler (PR#3)
+
+## Changed
 - Removed Optimizations in Dexpler
 
 ### Added

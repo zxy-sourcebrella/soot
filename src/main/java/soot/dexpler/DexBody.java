@@ -131,6 +131,7 @@ public class DexBody {
 	// registers
 	private Local[] registerLocals;
 	private Local storeResultLocal;
+    private Map<Integer, Map<Integer, Local>> regSnapshotAtAddress;
 	private Map<Integer, DexlibAbstractInstruction> instructionAtAddress;
 
 	private List<DeferableInstruction> deferredInstructions;
@@ -155,7 +156,7 @@ public class DexBody {
         public int endAddress;
         public int register;
         public String name;
-        public String type;
+        public Type type;
         public String signature;
 
         public LocalDebug(int sa, int ea, int reg, String nam, String ty, String sig)
@@ -164,7 +165,7 @@ public class DexBody {
             this.endAddress = ea;
             this.register = reg;
             this.name = nam;
-            this.type = ty;
+            this.type = DexType.toSoot(ty);
             this.signature = sig;
         }
     }
@@ -216,6 +217,7 @@ public class DexBody {
         localDebugs = new HashMap<Integer, LocalDebug>();
 
 		registerLocals = new Local[numRegisters];
+        regSnapshotAtAddress = new HashMap<>();
 
 		int address = 0;
 
@@ -243,14 +245,28 @@ public class DexBody {
 				ins.setLineNumber(ln.getLineNumber());
 			} else if (di instanceof ImmutableStartLocal) {
                 ImmutableStartLocal sl = (ImmutableStartLocal) di;
-                localDebugs.put(new Integer(sl.getRegister()), new LocalDebug(
-                            sl.getCodeAddress(), -1/*endAddress*/, sl.getRegister(),
-                            sl.getName(), sl.getType(), sl.getSignature()));
+                LocalDebug ld = localDebugs.get(sl.getRegister());
+                if (ld == null) {
+                    localDebugs.put(new Integer(sl.getRegister()), new LocalDebug(
+                                sl.getCodeAddress(), -1/*endAddress*/, sl.getRegister(),
+                                sl.getName(), sl.getType(), sl.getSignature()));
+                } else {
+                    ld.startAddress = sl.getCodeAddress();
+                    ld.name = sl.getName();
+                    ld.type = DexType.toSoot(sl.getType());
+                    ld.signature = sl.getSignature();
+                }
                 //System.out.println(method.getName()+"  start local"+ Integer.toString(sl.getRegister()) + sl.getName() + ":" + sl.getType() + sl.getCodeAddress());
             } else if (di instanceof ImmutableEndLocal) {
                 ImmutableEndLocal el = (ImmutableEndLocal) di;
                 LocalDebug ld = localDebugs.get(el.getRegister());
-                ld.endAddress = el.getCodeAddress();
+                if (ld == null) {
+                    localDebugs.put(new Integer(el.getRegister()), new LocalDebug(
+                                -1/*startAddress*/, el.getCodeAddress(), el.getRegister(),
+                                "", "", ""));
+                } else {
+                    ld.endAddress = el.getCodeAddress();
+                }
                 //System.out.println(method.getName()+"  end local" + Integer.toString(el.getRegister()) + el.getName() + ":" + el.getType() + el.getCodeAddress());
             }
 		}
@@ -354,9 +370,45 @@ public class DexBody {
 		return registerLocals[num];
 	}
 
+    public void setRegisterLocal(int num, Local reg) {
+        if (num < registerLocals.length)
+            registerLocals[num] = reg;
+        else
+            throw new InvalidDalvikBytecodeException(
+                    "Trying to access register " + num + " but only " + registerLocals.length + " is/are available.");
+    }
+
 	public Local getStoreResultLocal() {
 		return storeResultLocal;
 	}
+
+    public void setStoreResultLocal(Local newlocal) {
+        storeResultLocal = newlocal;
+    }
+
+    public void takeRegSnapshot(int addr) {
+        // Only keeps the very initial state
+        if (regSnapshotAtAddress.get(addr) != null) return;
+
+        Map<Integer, Local> regs = new HashMap<>();
+        regs.put(-1, storeResultLocal);
+        for (int i = 0; i < registerLocals.length; i++)
+            regs.put(i, registerLocals[i]);
+        regSnapshotAtAddress.put(addr, regs);
+    }
+
+    public Map<Integer, Local> retrieveRegSnapshot(int addr) {
+        return regSnapshotAtAddress.get(addr);
+    }
+
+    public void restoreRegSnapshot(int addr) {
+        Map<Integer, Local> regs =  regSnapshotAtAddress.get(addr);
+        if (regs == null) return;
+
+        storeResultLocal = regs.get(-1);
+        for (int i = 0; i < registerLocals.length; i++)
+            registerLocals[i] = regs.get(i);
+    }
 
 	/**
 	 * Return the instruction that is present at the byte code address.
@@ -425,9 +477,9 @@ public class DexBody {
 			int thisRegister = numRegisters - numParameterRegisters - 1;
 
 			Local thisLocal = jimple.newLocal("$u" + thisRegister, unknownType); // generateLocal(UnknownType.v());
+            thisLocal.setType(jBody.getMethod().getDeclaringClass().getType());
             if (localDebugs.containsKey(thisRegister)) {
-                thisLocal.setName(localDebugs.get(thisRegister).name);
-                // TODO hzh<huzhenghao@sbrella.com>: gen.setType()
+                thisLocal.setName("this");
             }
 			jBody.getLocals().add(thisLocal);
 
@@ -467,9 +519,9 @@ public class DexBody {
 																					// later
 																					// (before
 																					// splitting)
+                gen.setType(t);
                 if (localDebugs.containsKey(parameterRegister)) {
                     gen.setName(localDebugs.get(parameterRegister).name);
-                    // TODO hzh<huzhenghao@sbrella.com>: gen.setType()
                 }
 				jBody.getLocals().add(gen);
 
@@ -507,9 +559,9 @@ public class DexBody {
 																						// later
 																						// (before
 																						// splitting)
+                    g.setType(t);
                     if (localDebugs.containsKey(parameterRegister)) {
-                        gen.setName(localDebugs.get(parameterRegister).name);
-                        // TODO hzh<huzhenghao@sbrella.com>: gen.setType()
+                        g.setName(localDebugs.get(parameterRegister).name);
                     }
 					jBody.getLocals().add(g);
 					registerLocals[parameterRegister] = g;
@@ -523,7 +575,7 @@ public class DexBody {
 			registerLocals[i] = jimple.newLocal("$u" + i, unknownType);
             if (localDebugs.containsKey(i)) {
                 registerLocals[i].setName(localDebugs.get(i).name);
-                // TODO hzh<huzhenghao@sbrella.com>: gen.setType()
+                registerLocals[i].setType(localDebugs.get(i).type);
             }
 			jBody.getLocals().add(registerLocals[i]);
 		}
@@ -558,7 +610,9 @@ public class DexBody {
 				dangling.finalize(this, instruction);
 				dangling = null;
 			}
+            restoreRegSnapshot(instruction.getCodeAddress());
 			instruction.jimplify(this);
+            if (getBody().getUnits().size() > 0)
 			if (instruction.getLineNumber() > 0)
 				prevLineNumber = instruction.getLineNumber();
 			else {
@@ -635,8 +689,8 @@ public class DexBody {
 		//DeadAssignmentEliminator.v().transform(jBody);
 		//UnusedLocalEliminator.v().transform(jBody);
 
-		for (RetypeableInstruction i : instructionsToRetype)
-			i.retype(jBody);
+		//for (RetypeableInstruction i : instructionsToRetype)
+		//	i.retype(jBody);
 
 		// {
 		// // remove instructions from instructions list
@@ -654,7 +708,7 @@ public class DexBody {
 
 		if (IDalvikTyper.ENABLE_DVKTYPER) {
 
-			DexReturnValuePropagator.v().transform(jBody);
+			//DexReturnValuePropagator.v().transform(jBody);
 			//getCopyPopagator().transform(jBody);
 			DexNullThrowTransformer.v().transform(jBody);
 			DalvikTyper.v().typeUntypedConstrantInDiv(jBody);
@@ -671,26 +725,26 @@ public class DexBody {
 			// jBody.checkLocals();
 
 		} else {
-			// t_num.start();
-			DexNumTransformer.v().transform(jBody);
-			// t_num.end();
+			//// t_num.start();
+			//DexNumTransformer.v().transform(jBody);
+			//// t_num.end();
 
-			DexReturnValuePropagator.v().transform(jBody);
-			//getCopyPopagator().transform(jBody);
+			//DexReturnValuePropagator.v().transform(jBody);
+			////getCopyPopagator().transform(jBody);
 
-			DexNullThrowTransformer.v().transform(jBody);
+			//DexNullThrowTransformer.v().transform(jBody);
 
-			// t_null.start();
-			DexNullTransformer.v().transform(jBody);
-			// t_null.end();
+			//// t_null.start();
+			//DexNullTransformer.v().transform(jBody);
+			//// t_null.end();
 
-			DexIfTransformer.v().transform(jBody);
+			//DexIfTransformer.v().transform(jBody);
 
-			//DeadAssignmentEliminator.v().transform(jBody);
-			//UnusedLocalEliminator.v().transform(jBody);
+			////DeadAssignmentEliminator.v().transform(jBody);
+			////UnusedLocalEliminator.v().transform(jBody);
 
-			// DexRefsChecker.v().transform(jBody);
-			DexNullArrayRefTransformer.v().transform(jBody);
+			//// DexRefsChecker.v().transform(jBody);
+			//DexNullArrayRefTransformer.v().transform(jBody);
 		}
 
 		if (IDalvikTyper.ENABLE_DVKTYPER) {
@@ -702,7 +756,7 @@ public class DexBody {
 		// Remove "instanceof" checks on the null constant
 		//DexNullInstanceofTransformer.v().transform(jBody);
 
-		TypeAssigner.v().transform(jBody);
+		//TypeAssigner.v().transform(jBody);
 
 		final RefType objectType = RefType.v("java.lang.Object");
 		if (IDalvikTyper.ENABLE_DVKTYPER) {

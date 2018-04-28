@@ -55,6 +55,7 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
 
 public abstract class MethodInvocationInstruction extends DexlibAbstractInstruction implements DanglingInstruction {
 	private enum InvocationType {
@@ -81,7 +82,9 @@ public abstract class MethodInvocationInstruction extends DexlibAbstractInstruct
 //            i.setExpr(invocation);
 //            if (lineNumber != -1)
 //                i.setTag(new SourceLineNumberTag(lineNumber));
-          assign = Jimple.v().newAssignStmt(body.getStoreResultLocal(), invocation);
+          Local target = DexTypeInference.applyForward(-1,
+                  invocation.getMethodRef().returnType(), body);
+          assign = Jimple.v().newAssignStmt(target, invocation);
           setUnit(assign);
           addTags(assign);
           body.add(assign);

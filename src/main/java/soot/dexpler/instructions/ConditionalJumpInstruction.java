@@ -47,12 +47,21 @@ public abstract class ConditionalJumpInstruction extends JumpInstruction impleme
     protected abstract IfStmt ifStatement(DexBody body);
 
     public void jimplify(DexBody body) {
+
+        body.takeRegSnapshot(getTargetInstruction(body).getCodeAddress());
+
         // check if target instruction has been jimplified
         if (getTargetInstruction(body).getUnit() != null) {
             IfStmt s = ifStatement(body);
             body.add(s);
             setUnit(s);
         } else {
+          // NOTE hzh<huzhenghao@sbrella.com>: Explicit Set the Reg Snapshot,
+          // since If statement is deferred generation. Register type and name
+          // would change in processing the subsequent instructions, so need to
+          // restore back reg states in the stage of processing deferred stmts.
+          body.takeRegSnapshot(codeAddress);
+
           // set marker unit to swap real gotostmt with otherwise
           body.addDeferredJimplification(this);
           markerUnit = Jimple.v().newNopStmt();
@@ -70,6 +79,8 @@ public abstract class ConditionalJumpInstruction extends JumpInstruction impleme
     // DalvikTyper.v() here?
 
     public void deferredJimplify(DexBody body) {
+        // hzh<huzhenghao@sbrella.com>: Restore Reg state before code translation
+        body.restoreRegSnapshot(codeAddress);
         IfStmt s = ifStatement(body);
         body.getBody().getUnits().swapWith(markerUnit, s); //insertAfter(s, markerUnit);
         setUnit(s);

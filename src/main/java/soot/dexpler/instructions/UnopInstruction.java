@@ -41,6 +41,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
 import soot.jimple.LongConstant;
+import soot.dexpler.DexTypeInference;
 
 public class UnopInstruction extends TaggedInstruction {
 
@@ -59,7 +60,8 @@ public class UnopInstruction extends TaggedInstruction {
         Local source = body.getRegisterLocal(cmpInstr.getRegisterB());
         Value expr = getExpression(source);
 
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), expr);
+        Local target = DexTypeInference.applyForward(dest, source.getType(), body);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, expr);
 		assign.addTag(getTag());
 
         setUnit(assign);

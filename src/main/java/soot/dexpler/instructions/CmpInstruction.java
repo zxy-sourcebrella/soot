@@ -46,6 +46,7 @@ import soot.jimple.BinopExpr;
 import soot.jimple.Expr;
 import soot.jimple.Jimple;
 import soot.jimple.internal.JAssignStmt;
+import soot.dexpler.DexTypeInference;
 
 public class CmpInstruction extends TaggedInstruction {
 
@@ -98,8 +99,9 @@ public class CmpInstruction extends TaggedInstruction {
         default:
             throw new RuntimeException("no opcode for CMP: " + opcode);
         }
+        Local target = DexTypeInference.applyForward(dest, type, body);
 
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), cmpExpr);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, cmpExpr);
         assign.addTag(getTag());
 
         setUnit(assign);

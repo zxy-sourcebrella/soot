@@ -76,6 +76,24 @@ public class SparseSwitchInstruction extends SwitchInstruction {
     }
 
     @Override
+    protected List<Integer> getSwitchTargetAddrs(DexBody body, Instruction targetData) {
+        SparseSwitchPayload i = (SparseSwitchPayload) targetData;
+        List<? extends SwitchElement> seList = i.getSwitchElements();
+        List<Integer> targets = new ArrayList<>();
+
+        // the default target always follows the switch statement
+        int defaultTargetAddress = codeAddress + instruction.getCodeUnits();
+        targets.add(body.instructionAtAddress(defaultTargetAddress).getCodeAddress());
+
+        for(SwitchElement se: seList) {
+          int offset = se.getOffset();
+          targets.add(body.instructionAtAddress(codeAddress + offset).getCodeAddress());
+        }
+
+        return targets;
+    }
+
+    @Override
     public void computeDataOffsets(DexBody body) {
 //        System.out.println("class of instruction: "+ instruction.getClass());
 //        int offset = ((OffsetInstruction) instruction).getCodeOffset();

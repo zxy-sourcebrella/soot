@@ -39,6 +39,9 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
+import soot.Type;
+import soot.ArrayType;
 
 public class AgetInstruction extends DexlibAbstractInstruction {
   
@@ -54,11 +57,20 @@ public class AgetInstruction extends DexlibAbstractInstruction {
         Instruction23x aGetInstr = (Instruction23x)instruction;
         int dest = aGetInstr.getRegisterA();
        
-        Local arrayBase = body.getRegisterLocal(aGetInstr.getRegisterB());
+        Local arrayBase = DexTypeInference.applyBackward(
+                aGetInstr.getRegisterB(), IntType.v().makeArrayType(), body);
         Local index = body.getRegisterLocal(aGetInstr.getRegisterC());
 
         ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
-        Local l = body.getRegisterLocal(dest);
+        Local l;
+        Type elemTy;
+        if (arrayBase.getType() instanceof ArrayType)
+            elemTy = ((ArrayType) arrayBase.getType()).getElementType();
+        else
+            // hzh<huzhenghao@sbrella.com>: In case arrayBase is not ArrayType, reuse the
+            // dest reg type (IntType if Unknown)
+            elemTy = DexTypeInference.applyBackward(dest, IntType.v(), body).getType();
+        l = DexTypeInference.applyForward(dest, elemTy, body);
         
         AssignStmt assign = Jimple.v().newAssignStmt(l, arrayRef);
         if (aGetInstr.getOpcode() == Opcode.AGET_OBJECT)

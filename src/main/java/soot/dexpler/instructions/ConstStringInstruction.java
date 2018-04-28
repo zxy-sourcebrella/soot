@@ -36,6 +36,8 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.StringConstant;
+import soot.Local;
+import soot.dexpler.DexTypeInference;
 
 public class ConstStringInstruction extends DexlibAbstractInstruction {
   
@@ -56,7 +58,8 @@ public class ConstStringInstruction extends DexlibAbstractInstruction {
         } else
             throw new IllegalArgumentException("Expected Instruction21c or Instruction31c but got neither.");
         StringConstant sc = StringConstant.v(s);
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), sc);
+        Local target = DexTypeInference.applyForward(dest, sc.getType(), body);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, sc);
         setUnit(assign);
         addTags(assign);
         body.add(assign);

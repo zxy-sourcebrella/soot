@@ -35,6 +35,8 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.StaticFieldRef;
+import soot.Local;
+import soot.dexpler.DexTypeInference;
 
 public class SgetInstruction extends FieldInstruction {
 
@@ -47,7 +49,8 @@ public class SgetInstruction extends FieldInstruction {
         int dest = ((OneRegisterInstruction)instruction).getRegisterA();
         FieldReference f = (FieldReference)((ReferenceInstruction)instruction).getReference();
         StaticFieldRef r = Jimple.v().newStaticFieldRef(getStaticSootFieldRef(f));
-        AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), r);
+        Local target = DexTypeInference.applyForward(dest, r.getType(), body);
+        AssignStmt assign = Jimple.v().newAssignStmt(target, r);
         setUnit(assign);
         addTags(assign);
         body.add(assign);
