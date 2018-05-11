@@ -155,7 +155,7 @@ public class DexBody {
     }
   }
 
-  private static boolean UseDexAsmLineNo = false;
+  private boolean UseDexAsmLineNo = false;
 
   private final Map<Integer, LocalDebug> localDebugs;
 
@@ -172,6 +172,8 @@ public class DexBody {
     }
     return null;
   }
+
+  public void useDexAsmLineNo() { UseDexAsmLineNo = true; }
 
   /**
    * @param code
