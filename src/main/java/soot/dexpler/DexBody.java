@@ -155,6 +155,8 @@ public class DexBody {
     }
   }
 
+  private static boolean UseDexAsmLineNo = false;
+
   private final Map<Integer, LocalDebug> localDebugs;
 
   // detect array/instructions overlapping obfuscation
@@ -213,6 +215,7 @@ public class DexBody {
 
     for (Instruction instruction : code.getInstructions()) {
       DexlibAbstractInstruction dexInstruction = fromInstruction(instruction, address);
+      if (UseDexAsmLineNo)  dexInstruction.setLineNumber(address);
       instructions.add(dexInstruction);
       instructionAtAddress.put(address, dexInstruction);
       address += instruction.getCodeUnits();
@@ -224,7 +227,7 @@ public class DexBody {
     }
 
     for (DebugItem di : code.getDebugItems()) {
-      if (di instanceof ImmutableLineNumber) {
+      if (di instanceof ImmutableLineNumber && !UseDexAsmLineNo) {
         ImmutableLineNumber ln = (ImmutableLineNumber) di;
         DexlibAbstractInstruction ins = instructionAtAddress(ln.getCodeAddress());
         if (ins == null) {
