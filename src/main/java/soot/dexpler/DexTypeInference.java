@@ -61,7 +61,9 @@ public class DexTypeInference {
       // throw new RuntimeException("Forward Type Inference Failed: Unmatched Reg Width: "+ target.getType() + " vs. "+ assumeTy);
       // }
       Local newlocal = Jimple.v().newLocal("tmp", assumeTy);
-      newlocal.setName("tmp$" + System.identityHashCode(newlocal));
+      String oldName = target.getName();
+      //newlocal.setName("tmp$" + System.identityHashCode(newlocal));
+      newlocal.setName(oldName.replaceFirst("\\$[0-9]+$", "") + "$" + System.identityHashCode(newlocal));
 
       if (useResultReg) {
         body.setStoreResultLocal(newlocal);
