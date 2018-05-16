@@ -63,7 +63,7 @@ public class DexTypeInference {
       Local newlocal = Jimple.v().newLocal("tmp", assumeTy);
       String oldName = target.getName();
       //newlocal.setName("tmp$" + System.identityHashCode(newlocal));
-      newlocal.setName(oldName.replaceFirst("\\$[0-9]+$", "") + "$" + System.identityHashCode(newlocal));
+      newlocal.setName(oldName.replaceFirst("#[0-9]+$", "") + "#" + System.identityHashCode(newlocal));
 
       if (useResultReg) {
         body.setStoreResultLocal(newlocal);
