@@ -43,6 +43,7 @@ import soot.dexpler.IDalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceOfExpr;
 import soot.jimple.Jimple;
+import soot.dexpler.tags.UsedRegMapTag;
 
 public class InstanceOfInstruction extends DexlibAbstractInstruction {
 
@@ -64,6 +65,7 @@ public class InstanceOfInstruction extends DexlibAbstractInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // DalvikTyper.v().?

@@ -33,6 +33,7 @@ import org.jf.dexlib2.iface.instruction.OneRegisterInstruction;
 import soot.Local;
 import soot.Unit;
 import soot.dexpler.DexBody;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.Jimple;
 import soot.jimple.Stmt;
 
@@ -82,6 +83,7 @@ public abstract class SwitchInstruction extends PseudoInstruction implements Def
     int targetAddress = codeAddress + offset;
     Instruction targetData = body.instructionAtAddress(targetAddress).instruction;
     Stmt stmt = switchStatement(body, targetData, key);
+    stmt.addTag(new UsedRegMapTag(body, codeAddress, keyRegister));
     body.getBody().getUnits().insertAfter(stmt, markerUnit);
   }
 

@@ -38,6 +38,7 @@ import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.InvalidDalvikBytecodeException;
 import soot.dexpler.tags.ObjectOpTag;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
@@ -81,6 +82,8 @@ public class AgetInstruction extends DexlibAbstractInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress,
+                dest, aGetInstr.getRegisterB(), aGetInstr.getRegisterC()));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());

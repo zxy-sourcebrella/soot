@@ -37,6 +37,7 @@ import soot.Value;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexTypeInference;
 import soot.dexpler.tags.IntOpTag;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.AssignStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
@@ -70,6 +71,7 @@ public class BinopLitInstruction extends TaggedInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
 
     /*
      * if (IDalvikTyper.ENABLE_DVKTYPER) { Debug.printDbg(IDalvikTyper.DEBUG, "constraint: "+ assign);

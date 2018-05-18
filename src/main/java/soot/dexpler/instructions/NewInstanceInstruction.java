@@ -42,6 +42,7 @@ import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
 import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
@@ -64,6 +65,7 @@ public class NewInstanceInstruction extends DexlibAbstractInstruction {
     AssignStmt assign = Jimple.v().newAssignStmt(target, n);
     setUnit(assign);
     addTags(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
     body.add(assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {

@@ -29,6 +29,7 @@ import static soot.dexpler.instructions.InstructionFactory.fromInstruction;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,6 +51,7 @@ import org.jf.dexlib2.iface.debug.DebugItem;
 import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.immutable.debug.ImmutableEndLocal;
 import org.jf.dexlib2.immutable.debug.ImmutableLineNumber;
+import org.jf.dexlib2.immutable.debug.ImmutableRestartLocal;
 import org.jf.dexlib2.immutable.debug.ImmutableStartLocal;
 import org.jf.dexlib2.util.MethodUtil;
 import org.slf4j.Logger;
@@ -157,7 +159,7 @@ public class DexBody {
 
   private boolean UseDexAsmLineNo = false;
 
-  private final Map<Integer, LocalDebug> localDebugs;
+  private final Map<Integer, LinkedList<LocalDebug>> localDebugs;
 
   // detect array/instructions overlapping obfuscation
   private ArrayList<PseudoInstruction> pseudoInstructionData = new ArrayList<PseudoInstruction>();
@@ -174,6 +176,27 @@ public class DexBody {
   }
 
   public void useDexAsmLineNo() { UseDexAsmLineNo = true; }
+
+  /**
+   * Get the Variable name in a valid scope defined by
+   * DebugInfo
+   *
+   * @param codeaddr
+   *            codeAddress of the instruction
+   * @param reg
+   *            register number
+   * @return variable name defined in the debuginfo, return
+   *        null if not found
+   */
+  public String getValidVarName(int codeaddr, int reg) {
+    LinkedList<LocalDebug> lds = localDebugs.get(reg);
+    if (lds == null)    return null;
+    for (LocalDebug ld : lds) {
+      if (codeaddr >= ld.startAddress && codeaddr <= ld.endAddress)
+        return ld.name;
+    }
+    return null;
+  }
 
   /**
    * @param code
@@ -208,7 +231,7 @@ public class DexBody {
 
     instructions = new ArrayList<DexlibAbstractInstruction>();
     instructionAtAddress = new HashMap<Integer, DexlibAbstractInstruction>();
-    localDebugs = new HashMap<Integer, LocalDebug>();
+    localDebugs = new HashMap<Integer, LinkedList<LocalDebug>>();
 
     registerLocals = new Local[numRegisters];
     regSnapshotAtAddress = new HashMap<>();
@@ -238,27 +261,48 @@ public class DexBody {
           continue;
         }
         ins.setLineNumber(ln.getLineNumber());
-      } else if (di instanceof ImmutableStartLocal) {
-        ImmutableStartLocal sl = (ImmutableStartLocal) di;
-        LocalDebug ld = localDebugs.get(sl.getRegister());
-        if (ld == null) {
-          localDebugs.put(new Integer(sl.getRegister()),
-              new LocalDebug(sl.getCodeAddress(), -1/* endAddress */, sl.getRegister(), sl.getName(), sl.getType(), sl.getSignature()));
+      } else if (di instanceof ImmutableStartLocal
+              || di instanceof ImmutableRestartLocal) {
+        LinkedList<LocalDebug> lds;
+        int reg, codeAddr;
+        String type, signature, name;
+        if (di instanceof ImmutableStartLocal) {
+          ImmutableStartLocal sl = (ImmutableStartLocal) di;
+          reg = sl.getRegister();
+          codeAddr = sl.getCodeAddress();
+          name = sl.getName();
+          type = sl.getType();
+          signature = sl.getSignature();
+          lds = localDebugs.get(reg);
         } else {
-          ld.startAddress = sl.getCodeAddress();
-          ld.name = sl.getName();
-          ld.type = DexType.toSoot(sl.getType());
-          ld.signature = sl.getSignature();
+          ImmutableRestartLocal sl = (ImmutableRestartLocal) di;
+          reg = sl.getRegister();
+          codeAddr = sl.getCodeAddress();
+          name = sl.getName();
+          type = sl.getType();
+          signature = sl.getSignature();
+          lds = localDebugs.get(reg);
+        }
+        if (lds == null) {
+          localDebugs.put(new Integer(reg),
+              new LinkedList<LocalDebug>(Arrays.asList(
+                      new LocalDebug(codeAddr, -1/* endAddress */,
+                          reg, name, type, signature))));
+        } else {
+          // This is a new Debug Entry
+          lds.add(new LocalDebug(codeAddr, -1/* endAddress */,
+                  reg, name, type, signature));
         }
         // System.out.println(method.getName()+" start local"+ Integer.toString(sl.getRegister()) + sl.getName() + ":" + sl.getType() +
         // sl.getCodeAddress());
       } else if (di instanceof ImmutableEndLocal) {
         ImmutableEndLocal el = (ImmutableEndLocal) di;
-        LocalDebug ld = localDebugs.get(el.getRegister());
-        if (ld == null) {
-          localDebugs.put(new Integer(el.getRegister()), new LocalDebug(-1/* startAddress */, el.getCodeAddress(), el.getRegister(), "", "", ""));
+        LinkedList<LocalDebug> lds = localDebugs.get(el.getRegister());
+        if (lds == null || lds.isEmpty()) {
+          // Won't Reach Here: This DebugInfo is Out-of-Order
+          // System.out.println("OutOfOrder Local End");
         } else {
-          ld.endAddress = el.getCodeAddress();
+          lds.getLast().endAddress = el.getCodeAddress();
         }
         // System.out.println(method.getName()+" end local" + Integer.toString(el.getRegister()) + el.getName() + ":" + el.getType() +
         // el.getCodeAddress());
@@ -521,7 +565,7 @@ public class DexBody {
         // splitting)
         gen.setType(t);
         if (localDebugs.containsKey(parameterRegister)) {
-          gen.setName(localDebugs.get(parameterRegister).name);
+          gen.setName(localDebugs.get(parameterRegister).getFirst().name);
         }
         jBody.getLocals().add(gen);
 
@@ -561,7 +605,7 @@ public class DexBody {
           // splitting)
           g.setType(t);
           if (localDebugs.containsKey(parameterRegister)) {
-            g.setName(localDebugs.get(parameterRegister).name);
+            g.setName(localDebugs.get(parameterRegister).getFirst().name);
           }
           jBody.getLocals().add(g);
           registerLocals[parameterRegister] = g;
@@ -574,8 +618,8 @@ public class DexBody {
     for (int i = 0; i < (numRegisters - numParameterRegisters - (isStatic ? 0 : 1)); i++) {
       registerLocals[i] = jimple.newLocal("$u" + i, unknownType);
       if (localDebugs.containsKey(i)) {
-        registerLocals[i].setName(localDebugs.get(i).name);
-        registerLocals[i].setType(localDebugs.get(i).type);
+        registerLocals[i].setName(localDebugs.get(i).getFirst().name);
+        registerLocals[i].setType(localDebugs.get(i).getFirst().type);
       }
       jBody.getLocals().add(registerLocals[i]);
     }

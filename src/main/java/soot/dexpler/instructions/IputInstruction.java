@@ -38,6 +38,7 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.Jimple;
+import soot.dexpler.tags.UsedRegMapTag;
 
 public class IputInstruction extends FieldInstruction {
 
@@ -57,6 +58,7 @@ public class IputInstruction extends FieldInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, source, object));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // Debug.printDbg(IDalvikTyper.DEBUG, "constraint: "+ assign);
