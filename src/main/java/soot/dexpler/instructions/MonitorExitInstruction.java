@@ -31,6 +31,7 @@ import soot.Local;
 import soot.RefType;
 import soot.dexpler.DexBody;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ExitMonitorStmt;
 import soot.jimple.Jimple;
@@ -49,6 +50,7 @@ public class MonitorExitInstruction extends DexlibAbstractInstruction {
     setUnit(exitMonitorStmt);
     addTags(exitMonitorStmt);
     body.add(exitMonitorStmt);
+    exitMonitorStmt.addTag(new UsedRegMapTag(body, codeAddress, reg));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // Debug.printDbg(IDalvikTyper.DEBUG, "constraint: "+ exitMonitorStmt);

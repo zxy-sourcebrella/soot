@@ -36,6 +36,7 @@ import soot.dexpler.tags.DoubleOpTag;
 import soot.dexpler.tags.FloatOpTag;
 import soot.dexpler.tags.IntOpTag;
 import soot.dexpler.tags.LongOpTag;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 
@@ -65,6 +66,8 @@ public class Binop2addrInstruction extends TaggedInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress,
+                dest, binOp2AddrInstr.getRegisterB()));
 
     /*
      * if (IDalvikTyper.ENABLE_DVKTYPER) { BinopExpr bexpr = (BinopExpr)expr; short op = instruction.getOpcode().value;

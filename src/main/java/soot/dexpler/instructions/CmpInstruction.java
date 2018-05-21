@@ -41,6 +41,7 @@ import soot.dexpler.IDalvikTyper;
 import soot.dexpler.tags.DoubleOpTag;
 import soot.dexpler.tags.FloatOpTag;
 import soot.dexpler.tags.LongOpTag;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
@@ -108,6 +109,8 @@ public class CmpInstruction extends TaggedInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress,
+                dest, cmpInstr.getRegisterB(), cmpInstr.getRegisterC()));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       getTag().getName();

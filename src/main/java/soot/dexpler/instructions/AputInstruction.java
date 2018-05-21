@@ -37,6 +37,7 @@ import soot.dexpler.DexBody;
 import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.tags.ObjectOpTag;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
@@ -70,6 +71,8 @@ public class AputInstruction extends FieldInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress,
+                source, aPutInstr.getRegisterB(), aPutInstr.getRegisterC()));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());

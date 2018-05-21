@@ -35,6 +35,7 @@ import soot.UnknownType;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.dexpler.typing.UntypedConstant;
 import soot.dexpler.typing.UntypedIntOrFloatConstant;
@@ -72,6 +73,7 @@ public class ConstInstruction extends DexlibAbstractInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       if (cst instanceof UntypedConstant) {

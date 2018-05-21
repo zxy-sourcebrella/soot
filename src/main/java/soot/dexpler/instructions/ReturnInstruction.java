@@ -30,6 +30,7 @@ import org.jf.dexlib2.iface.instruction.formats.Instruction11x;
 import soot.Local;
 import soot.dexpler.DexBody;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.Jimple;
 import soot.jimple.ReturnStmt;
@@ -47,6 +48,7 @@ public class ReturnInstruction extends DexlibAbstractInstruction {
     ReturnStmt returnStmt = Jimple.v().newReturnStmt(l);
     setUnit(returnStmt);
     addTags(returnStmt);
+    returnStmt.addTag(new UsedRegMapTag(body, codeAddress, returnInstruction.getRegisterA()));
     body.add(returnStmt);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {

@@ -37,6 +37,7 @@ import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
 import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
@@ -69,6 +70,13 @@ public class FilledNewArrayRangeInstruction extends FilledArrayInstruction {
     Local arrayLocal = DexTypeInference.applyForward(-1, t, body);
     AssignStmt assignStmt = Jimple.v().newAssignStmt(arrayLocal, arrayExpr);
     body.add(assignStmt);
+    addTags(assignStmt);
+    UsedRegMapTag regmapping = new UsedRegMapTag();
+    for (int i = 0; i < usedRegister; i++) {
+      int reg = i + filledNewArrayInstr.getStartRegister();
+      regmapping.setRegMapping(body, codeAddress, reg);
+    }
+    assignStmt.addTag(regmapping);
 
     for (int i = 0; i < usedRegister; i++) {
       ArrayRef arrayRef = Jimple.v().newArrayRef(arrayLocal, IntConstant.v(i));
@@ -76,6 +84,12 @@ public class FilledNewArrayRangeInstruction extends FilledArrayInstruction {
       AssignStmt assign = Jimple.v().newAssignStmt(arrayRef, body.getRegisterLocal(i + filledNewArrayInstr.getStartRegister()));
       addTags(assign);
       body.add(assign);
+      regmapping = new UsedRegMapTag();
+      for (int ii = 0; ii < usedRegister; ii++) {
+        int reg = ii + filledNewArrayInstr.getStartRegister();
+        regmapping.setRegMapping(body, codeAddress, reg);
+      }
+      assign.addTag(regmapping);
     }
     // NopStmt nopStmtEnd = Jimple.v().newNopStmt();
     // body.add(nopStmtEnd);

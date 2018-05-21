@@ -56,6 +56,7 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
+import soot.dexpler.tags.UsedRegMapTag;
 
 public abstract class MethodInvocationInstruction extends DexlibAbstractInstruction implements DanglingInstruction {
   private enum InvocationType {
@@ -84,6 +85,11 @@ public abstract class MethodInvocationInstruction extends DexlibAbstractInstruct
       assign = Jimple.v().newAssignStmt(target, invocation);
       setUnit(assign);
       addTags(assign);
+      UsedRegMapTag regmapping = new UsedRegMapTag();
+      for (int i : getUsedRegistersNums()) {
+        regmapping.setRegMapping(body, codeAddress, i);
+      }
+      assign.addTag(regmapping);
       body.add(assign);
       unit = assign;
       // this is a invoke statement (the MoveResult had to be the direct successor for an expression)
@@ -91,6 +97,11 @@ public abstract class MethodInvocationInstruction extends DexlibAbstractInstruct
       InvokeStmt invoke = Jimple.v().newInvokeStmt(invocation);
       setUnit(invoke);
       addTags(invoke);
+      UsedRegMapTag regmapping = new UsedRegMapTag();
+      for (int i : getUsedRegistersNums()) {
+        regmapping.setRegMapping(body, codeAddress, i);
+      }
+      invoke.addTag(regmapping);
       body.add(invoke);
       unit = invoke;
     }

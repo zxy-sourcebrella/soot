@@ -42,6 +42,7 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.CastExpr;
 import soot.jimple.Jimple;
+import soot.dexpler.tags.UsedRegMapTag;
 
 public class CheckCastInstruction extends DexlibAbstractInstruction {
 
@@ -70,6 +71,7 @@ public class CheckCastInstruction extends DexlibAbstractInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, checkCastInstr.getRegisterA()));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), checkCastType, false);

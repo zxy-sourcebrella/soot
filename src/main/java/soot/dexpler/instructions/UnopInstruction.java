@@ -38,6 +38,7 @@ import soot.dexpler.tags.DoubleOpTag;
 import soot.dexpler.tags.FloatOpTag;
 import soot.dexpler.tags.IntOpTag;
 import soot.dexpler.tags.LongOpTag;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.AssignStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
@@ -67,6 +68,7 @@ public class UnopInstruction extends TaggedInstruction {
 
     setUnit(assign);
     addTags(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest, cmpInstr.getRegisterB()));
     body.add(assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {

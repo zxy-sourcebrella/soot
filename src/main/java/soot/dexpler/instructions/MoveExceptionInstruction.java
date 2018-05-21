@@ -34,6 +34,7 @@ import soot.Type;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.CaughtExceptionRef;
 import soot.jimple.IdentityStmt;
@@ -57,6 +58,7 @@ public class MoveExceptionInstruction extends DexlibAbstractInstruction implemen
     setUnit(stmtToRetype);
     addTags(stmtToRetype);
     body.add(stmtToRetype);
+    stmtToRetype.addTag(new UsedRegMapTag(body, codeAddress, dest));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(stmtToRetype.getLeftOpBox(), RefType.v("java.lang.Throwable"), false);

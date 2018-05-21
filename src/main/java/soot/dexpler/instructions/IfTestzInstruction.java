@@ -29,6 +29,7 @@ import org.jf.dexlib2.iface.instruction.formats.Instruction21t;
 
 import soot.dexpler.DexBody;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.BinopExpr;
 import soot.jimple.IfStmt;
 import soot.jimple.Jimple;
@@ -47,6 +48,7 @@ public class IfTestzInstruction extends ConditionalJumpInstruction {
     // setUnit() is called in ConditionalJumpInstruction
 
     addTags(jif);
+    jif.addTag(new UsedRegMapTag(body, codeAddress, i.getRegisterA()));
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // Debug.printDbg(IDalvikTyper.DEBUG, "constraint: "+ jif);
       /*

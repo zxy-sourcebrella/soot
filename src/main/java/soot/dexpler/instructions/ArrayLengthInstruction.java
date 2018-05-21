@@ -37,6 +37,7 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.LengthExpr;
+import soot.dexpler.tags.UsedRegMapTag;
 
 public class ArrayLengthInstruction extends DexlibAbstractInstruction {
 
@@ -63,6 +64,8 @@ public class ArrayLengthInstruction extends DexlibAbstractInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress,
+                dest, lengthOfArrayInstruction.getRegisterB()));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), IntType.v(), false);
