@@ -743,6 +743,7 @@ public class DexBody {
       }
       //restoreRegSnapshot(instruction.getCodeAddress());
       restoreRegWithInference(instruction.getCodeAddress());
+      if (tries != null)  takeExceptionRegSnapshot(instruction.getCodeAddress());
       instruction.jimplify(this);
       if (getBody().getUnits().size() > 0) {
         if (instruction.getLineNumber() > 0) {
@@ -1161,6 +1162,25 @@ public class DexBody {
     l.addAll(instructions.subList(0, i));
     Collections.reverse(l);
     return l;
+  }
+
+  /**
+   * Add Exception Table Info (almost identical to addTraps())
+   */
+  private void takeExceptionRegSnapshot(int currentAddr) {
+    for (TryBlock<? extends ExceptionHandler> tryItem : tries) {
+      int startAddress = tryItem.getStartCodeAddress();
+      int length = tryItem.getCodeUnitCount();
+      int endAddress = startAddress + length;
+
+      if (instructionAtAddress(startAddress) == instructionAtAddress(currentAddr)) {
+        List<? extends ExceptionHandler> hList = tryItem.getExceptionHandlers();
+        for (ExceptionHandler handler : hList) {
+          int haddr = handler.getHandlerCodeAddress();
+          takeRegSnapshot(instructionAtAddress(haddr).getCodeAddress());
+        }
+      }
+    }
   }
 
   /**
