@@ -70,6 +70,7 @@ public class CastInstruction extends TaggedInstruction {
     addTags(assign);
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), cast.getType(), false);

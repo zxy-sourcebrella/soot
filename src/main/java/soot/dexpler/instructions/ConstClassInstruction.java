@@ -70,6 +70,7 @@ public class ConstClassInstruction extends DexlibAbstractInstruction {
     addTags(assign);
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // DalvikTyper.v().captureAssign((JAssignStmt)assign, op); //TODO:

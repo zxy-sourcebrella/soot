@@ -77,6 +77,7 @@ public class FilledNewArrayRangeInstruction extends FilledArrayInstruction {
       regmapping.setRegMapping(body, codeAddress, reg);
     }
     assignStmt.addTag(regmapping);
+    body.setLRAssign(-1, assignStmt);
 
     for (int i = 0; i < usedRegister; i++) {
       ArrayRef arrayRef = Jimple.v().newArrayRef(arrayLocal, IntConstant.v(i));

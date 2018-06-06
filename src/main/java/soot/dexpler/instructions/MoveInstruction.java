@@ -55,6 +55,7 @@ public class MoveInstruction extends DexlibAbstractInstruction {
     addTags(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());

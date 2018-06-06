@@ -111,6 +111,7 @@ public class CmpInstruction extends TaggedInstruction {
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress,
                 dest, cmpInstr.getRegisterB(), cmpInstr.getRegisterC()));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       getTag().getName();

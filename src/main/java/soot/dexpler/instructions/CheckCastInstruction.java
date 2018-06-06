@@ -72,6 +72,7 @@ public class CheckCastInstruction extends DexlibAbstractInstruction {
     addTags(assign);
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, checkCastInstr.getRegisterA()));
+    body.setLRAssign(checkCastInstr.getRegisterA(), assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), checkCastType, false);

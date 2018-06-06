@@ -67,6 +67,7 @@ public class NewInstanceInstruction extends DexlibAbstractInstruction {
     addTags(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // DalvikTyper.v().captureAssign((JAssignStmt)assign, op); // TODO: ref. type may be null!

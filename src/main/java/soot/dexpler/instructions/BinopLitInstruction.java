@@ -72,6 +72,7 @@ public class BinopLitInstruction extends TaggedInstruction {
     addTags(assign);
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
+    body.setLRAssign(dest, assign);
 
     /*
      * if (IDalvikTyper.ENABLE_DVKTYPER) { Debug.printDbg(IDalvikTyper.DEBUG, "constraint: "+ assign);

@@ -28,7 +28,6 @@ public class DexTypeInference {
 
     if (target.getType() instanceof UnknownType) {
       target.setType(assumeTy);
-      // Skip otherwise
     }
 
     return target;

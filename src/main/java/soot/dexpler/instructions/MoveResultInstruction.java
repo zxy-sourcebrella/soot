@@ -64,6 +64,7 @@ public class MoveResultInstruction extends DexlibAbstractInstruction {
     addTags(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       JAssignStmt jassign = (JAssignStmt) assign;

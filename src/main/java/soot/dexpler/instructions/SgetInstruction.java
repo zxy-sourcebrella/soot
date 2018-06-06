@@ -56,6 +56,7 @@ public class SgetInstruction extends FieldInstruction {
     addTags(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), r.getType(), false);

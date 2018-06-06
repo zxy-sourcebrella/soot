@@ -70,6 +70,7 @@ public class UnopInstruction extends TaggedInstruction {
     addTags(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest, cmpInstr.getRegisterB()));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       /*

@@ -83,6 +83,7 @@ public class BinopInstruction extends TaggedInstruction {
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress,
                 dest, binOpInstr.getRegisterB(), binOpInstr.getRegisterC()));
+    body.setLRAssign(dest, assign);
 
     /*
      * if (IDalvikTyper.ENABLE_DVKTYPER) { int op = (int)instruction.getOpcode().value; BinopExpr bexpr = (BinopExpr)expr; JAssignStmt jassign =

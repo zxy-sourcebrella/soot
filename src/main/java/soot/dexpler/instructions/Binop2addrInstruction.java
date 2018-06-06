@@ -68,6 +68,7 @@ public class Binop2addrInstruction extends TaggedInstruction {
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress,
                 dest, binOp2AddrInstr.getRegisterB()));
+    body.setLRAssign(dest, assign);
 
     /*
      * if (IDalvikTyper.ENABLE_DVKTYPER) { BinopExpr bexpr = (BinopExpr)expr; short op = instruction.getOpcode().value;

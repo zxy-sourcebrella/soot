@@ -91,6 +91,7 @@ public abstract class MethodInvocationInstruction extends DexlibAbstractInstruct
       }
       assign.addTag(regmapping);
       body.add(assign);
+      body.setLRAssign(-1, assign);
       unit = assign;
       // this is a invoke statement (the MoveResult had to be the direct successor for an expression)
     } else {
@@ -306,13 +307,20 @@ public abstract class MethodInvocationInstruction extends DexlibAbstractInstruct
     // i: index for register
     // j: index for parameter type
     for (int i = 0, j = 0; i < regs.size(); i++, j++) {
-      parameters.add(body.getRegisterLocal(regs.get(i)));
+      if (paramTypes == null || (!isStatic && i == 0)) {
+        parameters.add(body.getRegisterLocal(regs.get(i)));
+      } else {
+        Type t = DexType.toSoot(paramTypes.get(j).toString());
+        parameters.add(DexTypeInference.applyBackward(regs.get(i), t, body));
+      }
+
       // if method is non-static the first parameter is the instance
       // pointer and has no corresponding parameter type
       if (!isStatic && i == 0) {
         j--;
         continue;
       }
+
       // If current parameter is wide ignore the next register.
       // No need to increment j as there is one parameter type
       // for those two registers.

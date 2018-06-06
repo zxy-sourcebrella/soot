@@ -118,6 +118,7 @@ public class BafBody extends Body {
 
         context.setCurrentUnit(s);
         ((ConvertToBaf) s).convertToBaf(context, conversionList);
+        System.err.println("> "+u +" : "+conversionList+"\n");
 
         stmtToFirstInstruction.put(s, conversionList.get(0));
         getUnits().addAll(conversionList);
