@@ -29,7 +29,12 @@ import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.iface.instruction.TwoRegisterInstruction;
 import org.jf.dexlib2.iface.instruction.formats.Instruction12x;
 
+import soot.DoubleType;
+import soot.FloatType;
+import soot.IntType;
 import soot.Local;
+import soot.LongType;
+import soot.Type;
 import soot.Value;
 import soot.dexpler.DexBody;
 import soot.dexpler.tags.DoubleOpTag;
@@ -39,6 +44,7 @@ import soot.dexpler.tags.LongOpTag;
 import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
+import soot.dexpler.DexTypeInference;
 
 public class Binop2addrInstruction extends TaggedInstruction {
 
@@ -55,8 +61,8 @@ public class Binop2addrInstruction extends TaggedInstruction {
     Instruction12x binOp2AddrInstr = (Instruction12x) instruction;
     int dest = binOp2AddrInstr.getRegisterA();
 
-    Local source1 = body.getRegisterLocal(binOp2AddrInstr.getRegisterA());
-    Local source2 = body.getRegisterLocal(binOp2AddrInstr.getRegisterB());
+    Local source1 = DexTypeInference.applyBackward(binOp2AddrInstr.getRegisterA(), getInferredType(), body);
+    Local source2 = DexTypeInference.applyBackward(binOp2AddrInstr.getRegisterB(), getInferredType(), body);
 
     Value expr = getExpression(source1, source2);
 
@@ -75,6 +81,54 @@ public class Binop2addrInstruction extends TaggedInstruction {
      * DalvikTyper.v().setType(bexpr.getOp1Box(), op1BinType[op-0xb0], true); DalvikTyper.v().setType(bexpr.getOp2Box(), op2BinType[op-0xb0], true);
      * DalvikTyper.v().setType(assign.getLeftOpBox(), resBinType[op-0xb0], false); }
      */
+  }
+
+  private Type getInferredType() {
+    Opcode opcode = instruction.getOpcode();
+    switch (opcode) {
+      case ADD_LONG_2ADDR:
+      case SUB_LONG_2ADDR:
+      case MUL_LONG_2ADDR:
+      case DIV_LONG_2ADDR:
+      case REM_LONG_2ADDR:
+      case AND_LONG_2ADDR:
+      case OR_LONG_2ADDR:
+      case XOR_LONG_2ADDR:
+      case SHL_LONG_2ADDR:
+      case SHR_LONG_2ADDR:
+      case USHR_LONG_2ADDR:
+        return LongType.v();
+
+      case ADD_FLOAT_2ADDR:
+      case SUB_FLOAT_2ADDR:
+      case MUL_FLOAT_2ADDR:
+      case DIV_FLOAT_2ADDR:
+      case REM_FLOAT_2ADDR:
+        return FloatType.v();
+
+      case ADD_DOUBLE_2ADDR:
+      case SUB_DOUBLE_2ADDR:
+      case MUL_DOUBLE_2ADDR:
+      case DIV_DOUBLE_2ADDR:
+      case REM_DOUBLE_2ADDR:
+        return DoubleType.v();
+
+      case ADD_INT_2ADDR:
+      case SUB_INT_2ADDR:
+      case MUL_INT_2ADDR:
+      case DIV_INT_2ADDR:
+      case REM_INT_2ADDR:
+      case AND_INT_2ADDR:
+      case OR_INT_2ADDR:
+      case XOR_INT_2ADDR:
+      case SHL_INT_2ADDR:
+      case SHR_INT_2ADDR:
+      case USHR_INT_2ADDR:
+        return IntType.v();
+
+      default:
+        throw new RuntimeException("Invalid Opcode: " + opcode);
+    }
   }
 
   private Value getExpression(Local source1, Local source2) {

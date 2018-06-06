@@ -58,7 +58,7 @@ public class BinopLitInstruction extends TaggedInstruction {
     int dest = ((TwoRegisterInstruction) instruction).getRegisterA();
     int source = ((TwoRegisterInstruction) instruction).getRegisterB();
 
-    Local source1 = body.getRegisterLocal(source);
+    Local source1 = DexTypeInference.applyBackward(source, IntType.v(), body);
 
     IntConstant constant = IntConstant.v(binOpLitInstr.getNarrowLiteral());
 

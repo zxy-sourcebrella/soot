@@ -43,6 +43,8 @@ import soot.dexpler.typing.UntypedLongOrDoubleConstant;
 import soot.jimple.AssignStmt;
 import soot.jimple.Constant;
 import soot.jimple.IntConstant;
+import soot.jimple.FloatConstant;
+import soot.jimple.DoubleConstant;
 import soot.jimple.Jimple;
 import soot.jimple.LongConstant;
 
@@ -61,7 +63,7 @@ public class ConstInstruction extends DexlibAbstractInstruction {
     // NOTE hzh<huzhenghao@sbrella.com>: Dex doesnt differenciate Int typed 0 and Pointer
     // Type. Propogate the register type explcitly to Unknown, so it will get a second
     // chance to be inferred to a correct type.
-    if (cst.equals(IntConstant.v(0))
+    if ((cst.equals(IntConstant.v(0)) || cst.equals(FloatConstant.v(0)))
         // This is to avoid reset the type of reg after it has initialized - One case is
         // reg type initialization based on local variable Debug Info
         && body.getRegisterLocal(dest).getType() instanceof UnknownType) {
