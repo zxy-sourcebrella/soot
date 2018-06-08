@@ -61,6 +61,7 @@ public class Binop2addrInstruction extends TaggedInstruction {
     Instruction12x binOp2AddrInstr = (Instruction12x) instruction;
     int dest = binOp2AddrInstr.getRegisterA();
 
+    DexTypeInference.checkUpdateTypeGroup(dest, binOp2AddrInstr.getRegisterB(), body);
     Local source1 = DexTypeInference.applyBackward(binOp2AddrInstr.getRegisterA(), getInferredType(), body);
     Local source2 = DexTypeInference.applyBackward(binOp2AddrInstr.getRegisterB(), getInferredType(), body);
 

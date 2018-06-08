@@ -369,7 +369,7 @@ public abstract class AbstractASMBackend {
         if (sm.hasActiveBody()) {
           mv.visitCode();
           generateMethodBody(mv, sm);
-          System.err.println("====== END Function : "+name+" ======\n");
+          //System.err.println("====== END Function : "+name+" ======\n");
           /*
            * Correct values are computed automatically by ASM, but we need the call anyways.
            */

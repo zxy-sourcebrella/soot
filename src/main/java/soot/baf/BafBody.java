@@ -110,6 +110,7 @@ public class BafBody extends Body {
 
     Map<Stmt, Unit> stmtToFirstInstruction = new HashMap<Stmt, Unit>();
 
+    //System.err.println("+++++++ "+getMethod().getName()+" +++++++\n");
     // Convert all jimple instructions
     {
       for (Unit u : jimpleBody.getUnits()) {
@@ -118,7 +119,7 @@ public class BafBody extends Body {
 
         context.setCurrentUnit(s);
         ((ConvertToBaf) s).convertToBaf(context, conversionList);
-        System.err.println("> "+u +" : "+conversionList+"\n");
+        //System.err.println("> "+u +" : "+conversionList+"\n");
 
         stmtToFirstInstruction.put(s, conversionList.get(0));
         getUnits().addAll(conversionList);
@@ -143,6 +144,6 @@ public class BafBody extends Body {
       }
     }
 
-    PackManager.v().getPack("bb").apply(this);
+    //PackManager.v().getPack("bb").apply(this);
   }
 }

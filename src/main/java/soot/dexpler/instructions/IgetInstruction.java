@@ -30,6 +30,7 @@ import org.jf.dexlib2.iface.instruction.TwoRegisterInstruction;
 import org.jf.dexlib2.iface.reference.FieldReference;
 
 import soot.Local;
+import soot.RefType;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
@@ -52,7 +53,7 @@ public class IgetInstruction extends FieldInstruction {
     int object = i.getRegisterB();
     FieldReference f = (FieldReference) ((ReferenceInstruction) instruction).getReference();
     final Jimple jimple = Jimple.v();
-    InstanceFieldRef r = jimple.newInstanceFieldRef(body.getRegisterLocal(object), getSootFieldRef(f));
+    InstanceFieldRef r = jimple.newInstanceFieldRef(DexTypeInference.applyBackward(object, RefType.v("java.lang.Object"), body), getSootFieldRef(f));
     Local target = DexTypeInference.applyForward(dest, r.getFieldRef().type(), body);
     AssignStmt assign = jimple.newAssignStmt(target, r);
     setUnit(assign);

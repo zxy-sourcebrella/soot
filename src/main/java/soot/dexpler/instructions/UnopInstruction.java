@@ -64,6 +64,7 @@ public class UnopInstruction extends TaggedInstruction {
     Instruction12x cmpInstr = (Instruction12x) instruction;
     int dest = cmpInstr.getRegisterA();
 
+    DexTypeInference.checkUpdateTypeGroup(dest, cmpInstr.getRegisterB(), body);
     Local source = DexTypeInference.applyBackward(cmpInstr.getRegisterB(), getInferredType(), body);
     Value expr = getExpression(source);
 

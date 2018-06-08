@@ -52,6 +52,7 @@ public class MoveResultInstruction extends DexlibAbstractInstruction {
 
     int dest = ((OneRegisterInstruction) instruction).getRegisterA();
 
+    DexTypeInference.checkUpdateTypeGroup(dest, -1, body);
     // if (local != null)
     // assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), local);
     // else if (expr != null)

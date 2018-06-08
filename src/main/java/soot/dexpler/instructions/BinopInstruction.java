@@ -61,6 +61,8 @@ public class BinopInstruction extends TaggedInstruction {
     Instruction23x binOpInstr = (Instruction23x) instruction;
     int dest = binOpInstr.getRegisterA();
 
+    DexTypeInference.checkUpdateTypeGroup(dest, binOpInstr.getRegisterB(), body);
+    DexTypeInference.checkUpdateTypeGroup(binOpInstr.getRegisterC(), dest, body);
     Local source1 = DexTypeInference.applyBackward(binOpInstr.getRegisterB(), getInferredType(), body);
     Local source2 = DexTypeInference.applyBackward(binOpInstr.getRegisterC(), getInferredType(), body);
 

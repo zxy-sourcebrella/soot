@@ -1082,9 +1082,9 @@ public class DexBody {
       Type t = l.getType();
       if (t instanceof NullType) {
         l.setType(objectType);
-      // NOTE hzh<huzhenghao@sbrella.com>: This is the Final Check
-      // type-inference should be finished before reaching here
-      } else if (t instanceof UnknownType) {
+      // NOTE hzh<huzhenghao@sbrella.com>: Worst Estimate that all unresolved Unknown Type
+      // is Int Type
+      } if (t instanceof UnknownType) {
         l.setType(IntType.v());
       }
     }
@@ -1092,6 +1092,53 @@ public class DexBody {
     // t_whole_jimplification.end();
 
     return jBody;
+  }
+
+  /**
+   * This is to infer the corner case here:
+   *                              $u1 = 0;     UnknownType
+   * *forward type inference*     $u2 = $u1;   u2 also UnknownType 
+   * *backward type inference*    foo($u2);    u2 type is inferenced to a concrete type
+   *                                           u1 is still unknown
+   *
+   * if assumeType is UnknownType, add target to the unknown group
+   * otherwise set whole group type to assumeType
+   *
+   * *related* is the default key linked to unknown group, which could be *null*,
+   * and if it is, then *target* will be the key.
+   */
+  private Set<Set<Local>> unknownTypeGroups = new HashSet<>();
+  public void checkUpdateTypeGroup(Local target, Type assumeType, Local related) {
+    // no need to do type inference if target type already known
+    if (!(target.getType() instanceof UnknownType)) return;
+
+    Local lkey = (related == null) ? target : related;
+    Set<Local> targetSet = null;
+    for (Set<Local> s : unknownTypeGroups) {
+      if (s.contains(lkey)) {
+        targetSet = s;
+        break;
+      }
+    }
+
+    // Add new group if doesn't exist - only for UnknownType -> UnknownType inference
+    if (targetSet == null && assumeType instanceof UnknownType) {
+      targetSet = new HashSet<>(Arrays.asList(lkey));
+      unknownTypeGroups.add(targetSet);
+    }
+
+    // targetSet == null && assumeType has type : (part of type inference logic)
+    if (targetSet == null) {
+      target.setType(assumeType);
+      return;
+    }
+
+    if (assumeType instanceof UnknownType) {
+      targetSet.add(target);
+    } else {
+      for (Local l : targetSet) l.setType(assumeType);
+      unknownTypeGroups.remove(targetSet);
+    }
   }
 
   private LocalSplitter localSplitter = null;

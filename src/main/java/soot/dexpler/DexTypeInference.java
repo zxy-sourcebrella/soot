@@ -16,18 +16,28 @@ public class DexTypeInference {
     return 32;
   }
 
-  public static Local applyBackward(int targetReg, Type assumeTy, DexBody body) {
+  private static Local getIndexedRegLocal(int targetReg, DexBody body) {
     boolean useResultReg = targetReg == -1/* storeResultLocal */;
 
-    Local target;
     if (useResultReg) {
-      target = body.getStoreResultLocal();
+      return body.getStoreResultLocal();
     } else {
-      target = body.getRegisterLocal(targetReg);
+      return body.getRegisterLocal(targetReg);
     }
+  }
+
+  public static void checkUpdateTypeGroup(int reg, int xreg, DexBody body) {
+    Local target = getIndexedRegLocal(reg, body);
+    Local related = getIndexedRegLocal(xreg, body);
+    body.checkUpdateTypeGroup(target, related.getType(), related);
+  }
+
+  public static Local applyBackward(int targetReg, Type assumeTy, DexBody body) {
+    Local target = getIndexedRegLocal(targetReg, body);
 
     if (target.getType() instanceof UnknownType) {
-      target.setType(assumeTy);
+      //target.setType(assumeTy);
+      body.checkUpdateTypeGroup(target, assumeTy, null);
     }
 
     return target;
@@ -37,17 +47,13 @@ public class DexTypeInference {
 
     boolean useResultReg = targetReg == -1/* storeResultLocal */;
 
-    Local target;
-    if (useResultReg) {
-      target = body.getStoreResultLocal();
-    } else {
-      target = body.getRegisterLocal(targetReg);
-    }
+    Local target = getIndexedRegLocal(targetReg, body);
 
     if (target.getType() instanceof UnknownType) {
       // TODO hzh<huzhenghao@sbrella.com>: Maybe we could skip the type inference
       // of the 2nd register when assumeTy is Long/Double type
-      target.setType(assumeTy);
+      //target.setType(assumeTy);
+      body.checkUpdateTypeGroup(target, assumeTy, null);
     } else if (!target.getType().equals(assumeTy)) {
       // if (getTypeWidth(target.getType()) != getTypeWidth(assumeTy)
       // // NOTE hzh<huzhenghao@sbrella.com>: Return Register doesn't care about

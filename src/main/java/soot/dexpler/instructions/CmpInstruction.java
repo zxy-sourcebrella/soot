@@ -66,6 +66,8 @@ public class CmpInstruction extends TaggedInstruction {
 
     int first = cmpInstr.getRegisterB();
     int second = cmpInstr.getRegisterC();
+    DexTypeInference.checkUpdateTypeGroup(dest, first, body);
+    DexTypeInference.checkUpdateTypeGroup(second, dest, body);
 
     // Expr cmpExpr;
     // Type type = null
