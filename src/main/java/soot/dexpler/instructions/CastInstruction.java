@@ -62,7 +62,7 @@ public class CastInstruction extends TaggedInstruction {
     int dest = i.getRegisterA();
     int source = i.getRegisterB();
     Type targetType = getTargetType();
-    CastExpr cast = Jimple.v().newCastExpr(body.getRegisterLocal(source), targetType);
+    CastExpr cast = Jimple.v().newCastExpr(DexTypeInference.applyBackward(source, getSourceType(), body), targetType);
     Local target = DexTypeInference.applyForward(dest, targetType, body);
     AssignStmt assign = Jimple.v().newAssignStmt(target, cast);
     assign.addTag(getTag());
@@ -70,6 +70,7 @@ public class CastInstruction extends TaggedInstruction {
     addTags(assign);
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), cast.getType(), false);
@@ -135,6 +136,35 @@ public class CastInstruction extends TaggedInstruction {
       case LONG_TO_DOUBLE:
         setTag(new LongOpTag());
         return DoubleType.v();
+
+      default:
+        throw new RuntimeException("Invalid Opcode: " + opcode);
+    }
+  }
+
+  private Type getSourceType() {
+    Opcode opcode = instruction.getOpcode();
+    switch (opcode) {
+      case INT_TO_BYTE:
+      case INT_TO_CHAR:
+      case INT_TO_SHORT:
+      case INT_TO_LONG:
+      case INT_TO_FLOAT:
+      case INT_TO_DOUBLE:
+        return IntType.v();
+
+      case LONG_TO_INT:
+      case LONG_TO_FLOAT:
+      case LONG_TO_DOUBLE:
+        return LongType.v();
+      case DOUBLE_TO_INT:
+      case DOUBLE_TO_LONG:
+      case DOUBLE_TO_FLOAT:
+        return DoubleType.v();
+      case FLOAT_TO_INT:
+      case FLOAT_TO_LONG:
+      case FLOAT_TO_DOUBLE:
+        return FloatType.v();
 
       default:
         throw new RuntimeException("Invalid Opcode: " + opcode);

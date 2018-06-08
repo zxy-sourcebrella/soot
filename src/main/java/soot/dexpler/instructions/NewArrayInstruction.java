@@ -79,6 +79,7 @@ public class NewArrayInstruction extends DexlibAbstractInstruction {
     addTags(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest, newArray.getRegisterB()));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(newArrayExpr.getSizeBox(), IntType.v(), true);

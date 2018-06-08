@@ -33,6 +33,7 @@ import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.BinopExpr;
 import soot.jimple.IfStmt;
 import soot.jimple.Jimple;
+import soot.Unit;
 
 public class IfTestzInstruction extends ConditionalJumpInstruction {
 
@@ -44,7 +45,9 @@ public class IfTestzInstruction extends ConditionalJumpInstruction {
   protected IfStmt ifStatement(DexBody body) {
     Instruction21t i = (Instruction21t) instruction;
     BinopExpr condition = getComparisonExpr(body, i.getRegisterA());
-    IfStmt jif = Jimple.v().newIfStmt(condition, targetInstruction.getUnit());
+    Unit u = body.getRelocatedStmt(targetInstruction.getCodeAddress());
+    if (u == null)  u = targetInstruction.getUnit();
+    IfStmt jif = Jimple.v().newIfStmt(condition, u);
     // setUnit() is called in ConditionalJumpInstruction
 
     addTags(jif);

@@ -66,6 +66,7 @@ public class ArrayLengthInstruction extends DexlibAbstractInstruction {
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress,
                 dest, lengthOfArrayInstruction.getRegisterB()));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), IntType.v(), false);

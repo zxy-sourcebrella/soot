@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 
 import soot.Body;
 import soot.DoubleType;
+import soot.IntType;
 import soot.Local;
 import soot.LongType;
 import soot.Modifier;
@@ -82,6 +83,8 @@ import soot.dexpler.instructions.OdexInstruction;
 import soot.dexpler.instructions.PseudoInstruction;
 import soot.dexpler.instructions.RetypeableInstruction;
 import soot.dexpler.typing.DalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
+import soot.dexpler.DexTypeInference;
 import soot.jimple.AssignStmt;
 import soot.jimple.CastExpr;
 import soot.jimple.CaughtExceptionRef;
@@ -102,6 +105,7 @@ import soot.jimple.toolkits.scalar.FieldStaticnessCorrector;
 import soot.jimple.toolkits.scalar.MethodStaticnessCorrector;
 import soot.jimple.toolkits.scalar.UnreachableCodeEliminator;
 import soot.options.Options;
+import soot.tagkit.BytecodeOffsetTag;
 import soot.tagkit.LineNumberTag;
 import soot.tagkit.SourceLineNumberTag;
 import soot.toolkits.scalar.LocalSplitter;
@@ -120,6 +124,9 @@ public class DexBody {
   private Local[] registerLocals;
   private Local storeResultLocal;
   private Map<Integer, Map<Integer, Local>> regSnapshotAtAddress;
+  private Map<Integer, Map<Integer, AssignStmt>> historyDefs;
+  private Map<Integer, AssignStmt> lastRecentAssign;
+  private Map<Integer, AssignStmt> instRelocateHelper;
   private Map<Integer, DexlibAbstractInstruction> instructionAtAddress;
 
   private List<DeferableInstruction> deferredInstructions;
@@ -235,6 +242,9 @@ public class DexBody {
 
     registerLocals = new Local[numRegisters];
     regSnapshotAtAddress = new HashMap<>();
+    historyDefs = new HashMap<>();
+    lastRecentAssign = new HashMap<>();
+    instRelocateHelper = new HashMap<>();
 
     int address = 0;
 
@@ -438,10 +448,85 @@ public class DexBody {
       regs.put(i, registerLocals[i]);
     }
     regSnapshotAtAddress.put(addr, regs);
+
+    // Take Snapshot of Reg's Last Recent Assign
+    takeRegDefsSnapshot(addr);
   }
 
   public Map<Integer, Local> retrieveRegSnapshot(int addr) {
     return regSnapshotAtAddress.get(addr);
+  }
+
+  // Associate AssignStmt with regs
+  public void setLRAssign(int reg, AssignStmt stmt) {
+    lastRecentAssign.put(reg, stmt);
+  }
+
+  // Take Snapshot for Last Recent Assign at Target Address
+  public void takeRegDefsSnapshot(int addr) {
+    Map<Integer, AssignStmt> regs = new HashMap<>();
+    regs.putAll(lastRecentAssign);
+    historyDefs.put(addr, regs);
+  }
+
+  // Helper to correct the start stmt of deferred branch target
+  public AssignStmt getRelocatedStmt(int addr) {
+    DexlibAbstractInstruction inst = instructionAtAddress(addr);
+    if (inst != null)   return instRelocateHelper.get(inst.getCodeAddress());
+    return null;
+  }
+
+  public AssignStmt getRegDefFromSnapshot(int addr, int reg) {
+    if (historyDefs.get(addr) == null)  return null;
+    return historyDefs.get(addr).get(reg);
+  }
+
+  public void restoreRegWithInference(int addr) {
+    Map<Integer, Local> regs = regSnapshotAtAddress.get(addr);
+    if (regs == null) {
+      return;
+    }
+
+    // Detect Unknown -> Concrete Type
+    AssignStmt firststmt = null;
+    for (int i = -1/*storeResultLocal*/; i < registerLocals.length; i++) {
+      Local r = (i == -1) ? storeResultLocal : registerLocals[i];
+
+      if (!(r.getType() instanceof UnknownType)
+         && regs.get(i).getType() instanceof UnknownType) {
+        // Make new Var
+        AssignStmt stmt = getRegDefFromSnapshot(addr, i);
+        Local newlocal = Jimple.v().newLocal("tmp", UnknownType.v());
+        String oldName = regs.get(i).getName();
+        newlocal.setName(oldName.replaceFirst("#[0-9]+$", "#" + System.identityHashCode(newlocal)));
+        this.getBody().getLocals().add(newlocal);
+        // Change restored reg to new Var
+        Local oldreg = regs.put(i, newlocal);
+        // Make Assign to fix Dataflow
+        if (stmt != null) {
+          newlocal = DexTypeInference.applyForward(i, stmt.getRightOp().getType(), this);
+          AssignStmt assign = Jimple.v().newAssignStmt(newlocal, stmt.getRightOp());
+          // NOTE hzh<huzhenghao@sbrella.com>: *NO* LineNumber Here
+          UsedRegMapTag regtag = (UsedRegMapTag) stmt.getTag(new UsedRegMapTag().getName());
+          HashMap<String, String> regmap = regtag.getMapping();
+          regmap.put(newlocal.getName(), regmap.remove(oldreg.getName()));
+          assign.addTag(new UsedRegMapTag(regmap));
+          assign.addTag(new BytecodeOffsetTag(addr));
+          this.add(assign);
+
+          // Take the first assign stmt
+          if (firststmt == null)    firststmt = assign;
+        }
+      }
+    }
+
+    if (firststmt != null)  instRelocateHelper.put(addr, firststmt);
+
+    // Restore Registers
+    storeResultLocal = regs.get(-1);
+    for (int i = 0; i < registerLocals.length; i++) {
+      registerLocals[i] = regs.get(i);
+    }
   }
 
   public void restoreRegSnapshot(int addr) {
@@ -450,6 +535,7 @@ public class DexBody {
       return;
     }
 
+    // Restore Registers
     storeResultLocal = regs.get(-1);
     for (int i = 0; i < registerLocals.length; i++) {
       registerLocals[i] = regs.get(i);
@@ -655,7 +741,9 @@ public class DexBody {
         dangling.finalize(this, instruction);
         dangling = null;
       }
-      restoreRegSnapshot(instruction.getCodeAddress());
+      //restoreRegSnapshot(instruction.getCodeAddress());
+      restoreRegWithInference(instruction.getCodeAddress());
+      if (tries != null)  takeExceptionRegSnapshot(instruction.getCodeAddress());
       instruction.jimplify(this);
       if (getBody().getUnits().size() > 0) {
         if (instruction.getLineNumber() > 0) {
@@ -994,12 +1082,63 @@ public class DexBody {
       Type t = l.getType();
       if (t instanceof NullType) {
         l.setType(objectType);
+      // NOTE hzh<huzhenghao@sbrella.com>: Worst Estimate that all unresolved Unknown Type
+      // is Int Type
+      } if (t instanceof UnknownType) {
+        l.setType(IntType.v());
       }
     }
 
     // t_whole_jimplification.end();
 
     return jBody;
+  }
+
+  /**
+   * This is to infer the corner case here:
+   *                              $u1 = 0;     UnknownType
+   * *forward type inference*     $u2 = $u1;   u2 also UnknownType 
+   * *backward type inference*    foo($u2);    u2 type is inferenced to a concrete type
+   *                                           u1 is still unknown
+   *
+   * if assumeType is UnknownType, add target to the unknown group
+   * otherwise set whole group type to assumeType
+   *
+   * *related* is the default key linked to unknown group, which could be *null*,
+   * and if it is, then *target* will be the key.
+   */
+  private Set<Set<Local>> unknownTypeGroups = new HashSet<>();
+  public void checkUpdateTypeGroup(Local target, Type assumeType, Local related) {
+    // no need to do type inference if target type already known
+    if (!(target.getType() instanceof UnknownType)) return;
+
+    Local lkey = (related == null) ? target : related;
+    Set<Local> targetSet = null;
+    for (Set<Local> s : unknownTypeGroups) {
+      if (s.contains(lkey)) {
+        targetSet = s;
+        break;
+      }
+    }
+
+    // Add new group if doesn't exist - only for UnknownType -> UnknownType inference
+    if (targetSet == null && assumeType instanceof UnknownType) {
+      targetSet = new HashSet<>(Arrays.asList(lkey));
+      unknownTypeGroups.add(targetSet);
+    }
+
+    // targetSet == null && assumeType has type : (part of type inference logic)
+    if (targetSet == null) {
+      target.setType(assumeType);
+      return;
+    }
+
+    if (assumeType instanceof UnknownType) {
+      targetSet.add(target);
+    } else {
+      for (Local l : targetSet) l.setType(assumeType);
+      unknownTypeGroups.remove(targetSet);
+    }
   }
 
   private LocalSplitter localSplitter = null;
@@ -1070,6 +1209,25 @@ public class DexBody {
     l.addAll(instructions.subList(0, i));
     Collections.reverse(l);
     return l;
+  }
+
+  /**
+   * Add Exception Table Info (almost identical to addTraps())
+   */
+  private void takeExceptionRegSnapshot(int currentAddr) {
+    for (TryBlock<? extends ExceptionHandler> tryItem : tries) {
+      int startAddress = tryItem.getStartCodeAddress();
+      int length = tryItem.getCodeUnitCount();
+      int endAddress = startAddress + length;
+
+      if (instructionAtAddress(startAddress) == instructionAtAddress(currentAddr)) {
+        List<? extends ExceptionHandler> hList = tryItem.getExceptionHandlers();
+        for (ExceptionHandler handler : hList) {
+          int haddr = handler.getHandlerCodeAddress();
+          takeRegSnapshot(instructionAtAddress(haddr).getCodeAddress());
+        }
+      }
+    }
   }
 
   /**

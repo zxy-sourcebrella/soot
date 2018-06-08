@@ -52,6 +52,7 @@ public class MoveResultInstruction extends DexlibAbstractInstruction {
 
     int dest = ((OneRegisterInstruction) instruction).getRegisterA();
 
+    DexTypeInference.checkUpdateTypeGroup(dest, -1, body);
     // if (local != null)
     // assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), local);
     // else if (expr != null)
@@ -64,6 +65,7 @@ public class MoveResultInstruction extends DexlibAbstractInstruction {
     addTags(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       JAssignStmt jassign = (JAssignStmt) assign;

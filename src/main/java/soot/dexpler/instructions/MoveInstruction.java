@@ -49,12 +49,15 @@ public class MoveInstruction extends DexlibAbstractInstruction {
 
     int dest = i.getRegisterA();
     int source = i.getRegisterB();
+    DexTypeInference.checkUpdateTypeGroup(dest, source, body);
     Local newdest = DexTypeInference.applyForward(dest, body.getRegisterLocal(source).getType(), body);
-    AssignStmt assign = Jimple.v().newAssignStmt(newdest, body.getRegisterLocal(source));
+    DexTypeInference.checkUpdateTypeGroup(dest, source, body);
+    AssignStmt assign = Jimple.v().newAssignStmt(newdest, DexTypeInference.applyBackward(source, newdest.getType(), body));
     setUnit(assign);
     addTags(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());

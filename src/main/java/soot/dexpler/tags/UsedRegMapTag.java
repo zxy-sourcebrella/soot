@@ -51,6 +51,10 @@ public class UsedRegMapTag implements Tag {
     return regNames.get(key);
   }
 
+  public HashMap<String, String> getMapping() {
+    return regNames;
+  }
+
   public String toString() {
     String out = "";
     for (String k : regNames.keySet()) {

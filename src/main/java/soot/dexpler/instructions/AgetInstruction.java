@@ -84,6 +84,7 @@ public class AgetInstruction extends DexlibAbstractInstruction {
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress,
                 dest, aGetInstr.getRegisterB(), aGetInstr.getRegisterC()));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());

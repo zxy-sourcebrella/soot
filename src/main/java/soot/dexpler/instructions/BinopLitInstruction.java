@@ -58,7 +58,8 @@ public class BinopLitInstruction extends TaggedInstruction {
     int dest = ((TwoRegisterInstruction) instruction).getRegisterA();
     int source = ((TwoRegisterInstruction) instruction).getRegisterB();
 
-    Local source1 = body.getRegisterLocal(source);
+    DexTypeInference.checkUpdateTypeGroup(dest, source, body);
+    Local source1 = DexTypeInference.applyBackward(source, IntType.v(), body);
 
     IntConstant constant = IntConstant.v(binOpLitInstr.getNarrowLiteral());
 
@@ -72,6 +73,7 @@ public class BinopLitInstruction extends TaggedInstruction {
     addTags(assign);
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
+    body.setLRAssign(dest, assign);
 
     /*
      * if (IDalvikTyper.ENABLE_DVKTYPER) { Debug.printDbg(IDalvikTyper.DEBUG, "constraint: "+ assign);

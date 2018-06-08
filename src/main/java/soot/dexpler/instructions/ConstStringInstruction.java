@@ -66,6 +66,7 @@ public class ConstStringInstruction extends DexlibAbstractInstruction {
     addTags(assign);
     body.add(assign);
     assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), sc.getType(), false);

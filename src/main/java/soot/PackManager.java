@@ -1073,8 +1073,8 @@ public class PackManager {
     // DeadAssignmentEliminator.v().transform(body);
     // UnusedLocalEliminator.v().transform(body);
     BafBody bafBody = Baf.v().newBody(body);
-    PackManager.v().getPack("bop").apply(bafBody);
-    PackManager.v().getPack("tag").apply(bafBody);
+    //PackManager.v().getPack("bop").apply(bafBody);
+    //PackManager.v().getPack("tag").apply(bafBody);
     if (Options.v().validate()) {
       bafBody.validate();
     }
