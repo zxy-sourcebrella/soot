@@ -231,7 +231,6 @@ public class BafASMBackend extends AbstractASMBackend {
         }
         mv.visitLineNumber(lnt.getLineNumber(), l);
       }
-      //System.err.println(""+u+"\n");
       generateInstruction(mv, (Inst) u);
     }
 
