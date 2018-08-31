@@ -70,6 +70,9 @@ public class Typing {
 
   public static void minimize(List<Typing> tgs, IHierarchy h) {
     outer: for (ListIterator<Typing> i = tgs.listIterator(); i.hasNext();) {
+      if (Thread.currentThread().isInterrupted()) {
+        throw new RuntimeException("Interrupted, might be timeout");
+      }
       Typing tgi = i.next();
 
       // Throw out duplicate typings
