@@ -1717,6 +1717,9 @@ final class AsmMethodSource implements MethodSource {
       stack = edge.stack;
       edge.stack = null;
       do {
+        if (Thread.currentThread().isInterrupted()) {
+          throw new RuntimeException("Interrupted, might be timeout");
+        }
         int type = insn.getType();
         if (type == FIELD_INSN) {
           convertFieldInsn((FieldInsnNode) insn);
