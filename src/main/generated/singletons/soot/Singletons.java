@@ -23,7 +23,7 @@
 package soot;
 
 /** A class to group together all the global variables in Soot. */
-@javax.annotation.Generated(value = "Saxonica v3.0", date = "2018-04-16T19:15:42.948+02:00", comments = "from singletons.xml")
+@javax.annotation.Generated(value = "Saxonica v3.0", date = "2019-01-03T10:45:52.11+08:00", comments = "from singletons.xml")
 public class Singletons {
 
     public final class Global {

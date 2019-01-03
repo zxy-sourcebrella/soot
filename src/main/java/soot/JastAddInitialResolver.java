@@ -60,7 +60,8 @@ public class JastAddInitialResolver implements IInitialResolver {
     if (u != null && !u.isResolved) {
       u.isResolved = true;
       java.util.ArrayList<soot.JastAddJ.Problem> errors = new java.util.ArrayList<soot.JastAddJ.Problem>();
-      u.errorCheck(errors);
+      // NOTE(Kai Luo): Disable this phase to generate more bitcode.
+      // u.errorCheck(errors);
       if (!errors.isEmpty()) {
         for (soot.JastAddJ.Problem p : errors) {
           logger.debug("" + p);

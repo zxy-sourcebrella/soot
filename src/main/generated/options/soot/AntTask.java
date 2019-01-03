@@ -33,7 +33,7 @@ import java.util.*;
  * Soot ant task.
  * @author Ondrej Lhotak
  */
-@javax.annotation.Generated(value = "Saxonica v3.0", date = "2018-04-16T19:15:43.476+02:00", comments = "from soot_options.xml")
+@javax.annotation.Generated(value = "Saxonica v3.0", date = "2019-01-03T10:45:52.557+08:00", comments = "from soot_options.xml")
 public class AntTask extends MatchingTask {
     public static final boolean DEBUG = true;
     private void debug(String s) {
@@ -187,6 +187,11 @@ public class AntTask extends MatchingTask {
   
         public void setsoot_classpath(String arg) {
             addArg("-soot-classpath");
+            addArg(arg);
+        }
+  
+        public void setsoot_bootclasspath(String arg) {
+            addArg("-soot-bootclasspath");
             addArg(arg);
         }
   

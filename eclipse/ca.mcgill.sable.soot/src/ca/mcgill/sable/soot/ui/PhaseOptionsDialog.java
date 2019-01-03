@@ -1158,6 +1158,12 @@ public class PhaseOptionsDialog extends AbstractOptionsDialog implements Selecti
 		if ((!(stringRes.equals(defStringRes))) && (stringRes != null) && (stringRes.length() != 0)) {
 			getConfig().put(getInput_Optionssoot_classpath_widget().getAlias(), stringRes);
 		}
+		stringRes = getInput_Optionssoot_bootclasspath_widget().getText().getText();
+		defStringRes = "";
+
+		if ((!(stringRes.equals(defStringRes))) && (stringRes != null) && (stringRes.length() != 0)) {
+			getConfig().put(getInput_Optionssoot_bootclasspath_widget().getAlias(), stringRes);
+		}
 		stringRes = getInput_Optionsprocess_dir_widget().getText().getText();
 		defStringRes = "";
 
@@ -4705,6 +4711,18 @@ public class PhaseOptionsDialog extends AbstractOptionsDialog implements Selecti
 	
 	public StringOptionWidget getInput_Optionssoot_classpath_widget() {
 		return Input_Optionssoot_classpath_widget;
+	}
+	
+	
+	
+	private StringOptionWidget Input_Optionssoot_bootclasspath_widget;
+	
+	private void setInput_Optionssoot_bootclasspath_widget(StringOptionWidget widget) {
+		Input_Optionssoot_bootclasspath_widget = widget;
+	}
+	
+	public StringOptionWidget getInput_Optionssoot_bootclasspath_widget() {
+		return Input_Optionssoot_bootclasspath_widget;
 	}
 	
 	
@@ -8682,6 +8700,18 @@ public class PhaseOptionsDialog extends AbstractOptionsDialog implements Selecti
 		}
 
 		setInput_Optionssoot_classpath_widget(new StringOptionWidget(editGroupInput_Options, SWT.NONE, new OptionData("Soot Classpath",  "", "","cp soot-class-path soot-classpath", "\nUse PATH as the list of directories in which Soot should search \nfor classes. PATH should be a series of directories, separated \nby the path separator character for your system. If no classpath \nis set on the command line, but the system property \nsoot.class.path has been set, Soot uses its value as the \nclasspath. If neither the command line nor the system properties \nspecify a Soot classpath, Soot falls back on a default classpath \nconsisting of the value of the system property java.class.path \nfollowed java.home/lib/rt.jar, where java.home stands for the \ncontents of the system property java.home and / stands for the \nsystem file separator.", defaultString)));
+		
+
+		defKey = ""+" "+""+" "+"bcp soot-bootclasspath";
+		defKey = defKey.trim();
+
+		if (isInDefList(defKey)) {
+			defaultString = getStringDef(defKey);	
+		} else {
+			defaultString = "";
+		}
+
+		setInput_Optionssoot_bootclasspath_widget(new StringOptionWidget(editGroupInput_Options, SWT.NONE, new OptionData("Soot Boot Classpath",  "", "","bcp soot-bootclasspath", "\n", defaultString)));
 		
 
 		defKey = ""+" "+""+" "+"android-jars";

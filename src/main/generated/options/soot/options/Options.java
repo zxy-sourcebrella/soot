@@ -30,7 +30,7 @@ import java.util.*;
  *
  * @author Ondrej Lhotak
  */
-@javax.annotation.Generated(value = "Saxonica v3.0", date = "2018-04-16T19:15:43.228+02:00", comments = "from soot_options.xml")
+@javax.annotation.Generated(value = "Saxonica v3.0", date = "2019-01-03T10:45:52.335+08:00", comments = "from soot_options.xml")
 public class Options extends OptionsBase {
 
     public Options(Singletons.Global g) {
@@ -231,6 +231,23 @@ public class Options extends OptionsBase {
                     soot_classpath = value;
                 else {
                     G.v().out.println("Duplicate values " + soot_classpath + " and " + value + " for option -" + option);
+                    return false;
+                }
+            }
+            else if (false
+                    || option.equals("bcp")
+                    || option.equals("soot-bootclasspath")
+            ) {
+                if (!hasMoreOptions()) {
+                    G.v().out.println("No value given for option -" + option);
+                    return false;
+                }
+
+                String value = nextOption();
+                if (soot_bootclasspath.isEmpty())
+                    soot_bootclasspath = value;
+                else {
+                    G.v().out.println("Duplicate values " + soot_bootclasspath + " and " + value + " for option -" + option);
                     return false;
                 }
             }
@@ -1345,6 +1362,10 @@ public class Options extends OptionsBase {
     public void set_soot_classpath(String setting) { soot_classpath = setting; }
     private String soot_classpath = "";
 
+    public String soot_bootclasspath() { return soot_bootclasspath; }
+    public void set_soot_bootclasspath(String setting) { soot_bootclasspath = setting; }
+    private String soot_bootclasspath = "";
+
     public boolean prepend_classpath() { return prepend_classpath; }
     private boolean prepend_classpath = false;
     public void set_prepend_classpath(boolean setting) { prepend_classpath = setting; }
@@ -1618,6 +1639,7 @@ public class Options extends OptionsBase {
                 + padOpt("-ignore-resolving-levels", "Ignore mismatching resolving levels")
                 + "\nInput Options:\n"
                 + padOpt("-cp ARG -soot-class-path ARG -soot-classpath ARG", "Use ARG as the classpath for finding classes.")
+                + padOpt("-bcp ARG -soot-bootclasspath ARG", "Use ARG as the boot classpath for finding classes.")
                 + padOpt("-pp, -prepend-classpath", "Prepend the given soot classpath to the default classpath.")
                 + padOpt("-ice, -ignore-classpath-errors", "Ignores invalid entries on the Soot classpath.")
                 + padOpt("-process-multiple-dex", "Process all DEX files found in APK.")
