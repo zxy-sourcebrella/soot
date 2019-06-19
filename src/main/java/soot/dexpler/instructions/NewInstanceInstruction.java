@@ -60,7 +60,7 @@ public class NewInstanceInstruction extends DexlibAbstractInstruction {
     int dest = i.getRegisterA();
     String className = dottedClassName(((TypeReference) (i.getReference())).toString());
     RefType type = RefType.v(className);
-    // NOTE: this type need check
+    // NOTE <penguin-wwy wangwenyang@sbrella.com>: this type need check
     NewExpr n = Jimple.v().newNewExpr(type);
     Local target = body.getRegisterLocal(dest);
     AssignStmt assign = Jimple.v().newAssignStmt(target, n);
