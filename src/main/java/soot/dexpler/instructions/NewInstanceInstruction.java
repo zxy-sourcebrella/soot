@@ -61,7 +61,7 @@ public class NewInstanceInstruction extends DexlibAbstractInstruction {
     String className = dottedClassName(((TypeReference) (i.getReference())).toString());
     RefType type = RefType.v(className);
     NewExpr n = Jimple.v().newNewExpr(type);
-    Local target = DexTypeInference.applyForward(dest, type, body);
+    Local target = body.getRegisterLocal(dest);
     AssignStmt assign = Jimple.v().newAssignStmt(target, n);
     setUnit(assign);
     addTags(assign);
