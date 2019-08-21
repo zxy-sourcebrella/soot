@@ -37,7 +37,9 @@ import soot.Type;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
+import soot.dexpler.DexTypeInference;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.StaticFieldRef;
@@ -53,10 +55,11 @@ public class SputInstruction extends FieldInstruction {
     int source = ((OneRegisterInstruction) instruction).getRegisterA();
     FieldReference f = (FieldReference) ((ReferenceInstruction) instruction).getReference();
     StaticFieldRef instanceField = Jimple.v().newStaticFieldRef(getStaticSootFieldRef(f));
-    Local sourceValue = body.getRegisterLocal(source);
+    Local sourceValue = DexTypeInference.applyBackward(source, instanceField.getField().getType(), body);
     AssignStmt assign = getAssignStmt(body, sourceValue, instanceField);
     setUnit(assign);
     addTags(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, source));
     body.add(assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {

@@ -38,11 +38,14 @@ import org.jf.dexlib2.iface.instruction.ReferenceInstruction;
 import org.jf.dexlib2.iface.instruction.formats.Instruction21c;
 import org.jf.dexlib2.iface.reference.TypeReference;
 
+import soot.Local;
 import soot.RefType;
 import soot.Type;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
@@ -60,11 +63,15 @@ public class NewInstanceInstruction extends DexlibAbstractInstruction {
     int dest = i.getRegisterA();
     String className = dottedClassName(((TypeReference) (i.getReference())).toString());
     RefType type = RefType.v(className);
+    // NOTE <penguin-wwy wangwenyang@sbrella.com>: this type need check
     NewExpr n = Jimple.v().newNewExpr(type);
-    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), n);
+    Local target = body.getRegisterLocal(dest);
+    AssignStmt assign = Jimple.v().newAssignStmt(target, n);
     setUnit(assign);
     addTags(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // DalvikTyper.v().captureAssign((JAssignStmt)assign, op); // TODO: ref. type may be null!

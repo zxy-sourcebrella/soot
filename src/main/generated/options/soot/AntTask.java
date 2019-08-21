@@ -200,6 +200,11 @@ public class AntTask extends MatchingTask {
             addArg(arg);
         }
   
+        public void setsoot_bootclasspath(String arg) {
+            addArg("-soot-bootclasspath");
+            addArg(arg);
+        }
+  
         public void setprepend_classpath(boolean arg) {
             if(arg) addArg("-prepend-classpath");
         }

@@ -33,8 +33,12 @@ import org.jf.dexlib2.iface.instruction.NarrowLiteralInstruction;
 import org.jf.dexlib2.iface.instruction.OneRegisterInstruction;
 import org.jf.dexlib2.iface.instruction.WideLiteralInstruction;
 
+import soot.Local;
+import soot.UnknownType;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.dexpler.typing.UntypedConstant;
 import soot.dexpler.typing.UntypedIntOrFloatConstant;
@@ -42,6 +46,8 @@ import soot.dexpler.typing.UntypedLongOrDoubleConstant;
 import soot.jimple.AssignStmt;
 import soot.jimple.Constant;
 import soot.jimple.IntConstant;
+import soot.jimple.FloatConstant;
+import soot.jimple.DoubleConstant;
 import soot.jimple.Jimple;
 import soot.jimple.LongConstant;
 
@@ -56,10 +62,21 @@ public class ConstInstruction extends DexlibAbstractInstruction {
     int dest = ((OneRegisterInstruction) instruction).getRegisterA();
 
     Constant cst = getConstant(dest, body);
-    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), cst);
+    Local target;
+    // NOTE hzh<huzhenghao@sbrella.com>: Dex doesnt differenciate Int typed 0 and Pointer
+    // Type. Propogate the register type explcitly to Unknown, so it will get a second
+    // chance to be inferred to a correct type.
+    if ((cst.equals(IntConstant.v(0)) || cst.equals(FloatConstant.v(0)))) {
+      target = DexTypeInference.applyForward(dest, UnknownType.v(), body);
+    } else {
+      target = DexTypeInference.applyForward(dest, cst.getType(), body);
+    }
+    AssignStmt assign = Jimple.v().newAssignStmt(target, cst);
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       if (cst instanceof UntypedConstant) {

@@ -37,8 +37,10 @@ import soot.Local;
 import soot.Type;
 import soot.UnknownType;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.tags.ObjectOpTag;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
@@ -58,12 +60,12 @@ public class AputInstruction extends FieldInstruction {
 
     Instruction23x aPutInstr = (Instruction23x) instruction;
     int source = aPutInstr.getRegisterA();
+    Local sourceValue = DexTypeInference.applyBackward(source, IntType.v(), body);
 
-    Local arrayBase = body.getRegisterLocal(aPutInstr.getRegisterB());
+    Local arrayBase = DexTypeInference.applyBackward(aPutInstr.getRegisterB(), sourceValue.getType().makeArrayType(), body);
     Local index = body.getRegisterLocal(aPutInstr.getRegisterC());
     ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
 
-    Local sourceValue = body.getRegisterLocal(source);
     AssignStmt assign = getAssignStmt(body, sourceValue, arrayRef);
     if (aPutInstr.getOpcode() == Opcode.APUT_OBJECT) {
       assign.addTag(new ObjectOpTag());
@@ -72,6 +74,8 @@ public class AputInstruction extends FieldInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress,
+                source, aPutInstr.getRegisterB(), aPutInstr.getRegisterC()));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());

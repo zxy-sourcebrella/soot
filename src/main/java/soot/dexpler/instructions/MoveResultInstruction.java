@@ -30,8 +30,11 @@ package soot.dexpler.instructions;
 import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.iface.instruction.OneRegisterInstruction;
 
+import soot.Local;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
@@ -52,16 +55,20 @@ public class MoveResultInstruction extends DexlibAbstractInstruction {
 
     int dest = ((OneRegisterInstruction) instruction).getRegisterA();
 
+    DexTypeInference.checkUpdateTypeGroup(dest, -1, body);
     // if (local != null)
     // assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), local);
     // else if (expr != null)
     // assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), expr);
     // else
     // throw new RuntimeException("Neither local and expr are set to move.");
-    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), body.getStoreResultLocal());
+    Local target = DexTypeInference.applyForward(dest, body.getStoreResultLocal().getType(), body);
+    AssignStmt assign = Jimple.v().newAssignStmt(target, body.getStoreResultLocal());
     setUnit(assign);
     addTags(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       JAssignStmt jassign = (JAssignStmt) assign;

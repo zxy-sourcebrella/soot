@@ -32,14 +32,21 @@ import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.iface.instruction.TwoRegisterInstruction;
 import org.jf.dexlib2.iface.instruction.formats.Instruction12x;
 
+import soot.DoubleType;
+import soot.FloatType;
+import soot.IntType;
 import soot.Local;
+import soot.LongType;
+import soot.Type;
 import soot.Value;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.tags.DoubleOpTag;
 import soot.dexpler.tags.FloatOpTag;
 import soot.dexpler.tags.IntOpTag;
 import soot.dexpler.tags.LongOpTag;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.AssignStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
@@ -60,15 +67,19 @@ public class UnopInstruction extends TaggedInstruction {
     Instruction12x cmpInstr = (Instruction12x) instruction;
     int dest = cmpInstr.getRegisterA();
 
-    Local source = body.getRegisterLocal(cmpInstr.getRegisterB());
+    DexTypeInference.checkUpdateTypeGroup(dest, cmpInstr.getRegisterB(), body);
+    Local source = DexTypeInference.applyBackward(cmpInstr.getRegisterB(), getInferredType(), body);
     Value expr = getExpression(source);
 
-    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), expr);
+    Local target = DexTypeInference.applyForward(dest, source.getType(), body);
+    AssignStmt assign = Jimple.v().newAssignStmt(target, expr);
     assign.addTag(getTag());
 
     setUnit(assign);
     addTags(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest, cmpInstr.getRegisterB()));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       /*
@@ -77,6 +88,24 @@ public class UnopInstruction extends TaggedInstruction {
        * ((UnopExpr) expr).getOpBox(), opUnType[op - 0x7b], true); DalvikTyper.v().setType(jass.leftBox, resUnType[op -
        * 0x7b], false);
        */
+    }
+  }
+
+  private Type getInferredType() {
+    Opcode opcode = instruction.getOpcode();
+    switch (opcode) {
+      case NEG_INT:
+      case NOT_INT:
+        return IntType.v();
+      case NEG_LONG:
+      case NOT_LONG:
+        return LongType.v();
+      case NEG_FLOAT:
+        return FloatType.v();
+      case NEG_DOUBLE:
+        return DoubleType.v();
+      default:
+        throw new RuntimeException("Invalid Opcode: " + opcode);
     }
   }
 

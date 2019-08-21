@@ -483,6 +483,18 @@
 		</stropt>
 
 	
+        <stropt>
+            <!--NOTE: Added by sbrella-->
+            <name>Soot Boot Classpath</name>
+            <alias>bcp</alias>
+            <alias>soot-bootclasspath</alias>
+            <set_arg_label>path</set_arg_label>
+            <short_desc>Use
+                <use_arg_label/>
+                as the boot classpath for finding classes.
+            </short_desc>
+        </stropt>
+
         <boolopt>
             <name>Prepend classpath</name>
             <alias>pp</alias>

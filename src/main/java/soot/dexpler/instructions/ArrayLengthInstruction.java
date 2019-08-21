@@ -34,11 +34,13 @@ import org.jf.dexlib2.iface.instruction.formats.Instruction12x;
 import soot.IntType;
 import soot.Local;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
 import soot.jimple.LengthExpr;
+import soot.dexpler.tags.UsedRegMapTag;
 
 public class ArrayLengthInstruction extends DexlibAbstractInstruction {
 
@@ -55,15 +57,19 @@ public class ArrayLengthInstruction extends DexlibAbstractInstruction {
     Instruction12x lengthOfArrayInstruction = (Instruction12x) instruction;
     int dest = lengthOfArrayInstruction.getRegisterA();
 
-    Local arrayReference = body.getRegisterLocal(lengthOfArrayInstruction.getRegisterB());
+    Local arrayReference = DexTypeInference.applyBackward(lengthOfArrayInstruction.getRegisterB(), IntType.v().makeArrayType(), body);
 
     LengthExpr lengthExpr = Jimple.v().newLengthExpr(arrayReference);
+    Local target = DexTypeInference.applyForward(dest, IntType.v(), body);
 
-    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), lengthExpr);
+    AssignStmt assign = Jimple.v().newAssignStmt(target, lengthExpr);
 
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress,
+                dest, lengthOfArrayInstruction.getRegisterB()));
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), IntType.v(), false);

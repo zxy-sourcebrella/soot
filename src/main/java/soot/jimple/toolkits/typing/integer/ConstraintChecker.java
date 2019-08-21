@@ -35,6 +35,7 @@ import soot.IntType;
 import soot.IntegerType;
 import soot.Local;
 import soot.NullType;
+import soot.RefType;
 import soot.ShortType;
 import soot.SootMethodRef;
 import soot.Type;
@@ -143,9 +144,14 @@ class ConstraintChecker extends AbstractStmtSwitch {
     for (int i = 0; i < ie.getArgCount(); i++) {
       if (ie.getArg(i) instanceof Local) {
         Local local = (Local) ie.getArg(i);
-        if (local.getType() instanceof IntegerType) {
-          if (!ClassHierarchy.v().typeNode(local.getType())
-              .hasAncestor_1(ClassHierarchy.v().typeNode(method.parameterType(i)))) {
+//<<<<<<< HEAD
+//        if (local.getType() instanceof IntegerType) {
+//          if (!ClassHierarchy.v().typeNode(local.getType())
+//              .hasAncestor_1(ClassHierarchy.v().typeNode(method.parameterType(i)))) {
+//=======
+        if (local.getType() instanceof IntegerType && method.parameterType(i) instanceof IntegerType) {
+          if (!ClassHierarchy.v().typeNode(local.getType()).hasAncestor_1(ClassHierarchy.v().typeNode(method.parameterType(i)))) {
+//>>>>>>> origin/develop
             if (fix) {
               ie.setArg(i, insertCast(local, method.parameterType(i), invokestmt));
             } else {
@@ -419,7 +425,7 @@ class ConstraintChecker extends AbstractStmtSwitch {
           }
         }
 
-        if (!rop.hasAncestor_1(ClassHierarchy.v().INT)) {
+        if (rop != null && !rop.hasAncestor_1(ClassHierarchy.v().INT)) {
           if (fix) {
             be.setOp2(insertCast(be.getOp2(), getTypeForCast(rop), IntType.v(), stmt));
           } else {
@@ -440,7 +446,7 @@ class ConstraintChecker extends AbstractStmtSwitch {
           }
         }
 
-        if (!rop.hasAncestor_1(ClassHierarchy.v().INT)) {
+        if (rop != null && !rop.hasAncestor_1(ClassHierarchy.v().INT)) {
           if (fix) {
             be.setOp2(insertCast(be.getOp2(), getTypeForCast(rop), IntType.v(), stmt));
           } else {
@@ -609,6 +615,11 @@ class ConstraintChecker extends AbstractStmtSwitch {
   public void caseIdentityStmt(IdentityStmt stmt) {
     Value l = stmt.getLeftOp();
     Value r = stmt.getRightOp();
+
+    // if (r.getType() == RefType.v("java.lang.Throwable"))
+    if (r.getType() instanceof RefType) {
+      return;
+    }
 
     if (l instanceof Local) {
       if (((Local) l).getType() instanceof IntegerType) {

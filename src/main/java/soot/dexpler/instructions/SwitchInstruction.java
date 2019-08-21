@@ -27,6 +27,9 @@ package soot.dexpler.instructions;
  * #L%
  */
 
+
+import java.util.List;
+
 import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.iface.instruction.OffsetInstruction;
 import org.jf.dexlib2.iface.instruction.OneRegisterInstruction;
@@ -34,6 +37,7 @@ import org.jf.dexlib2.iface.instruction.OneRegisterInstruction;
 import soot.Local;
 import soot.Unit;
 import soot.dexpler.DexBody;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.Jimple;
 import soot.jimple.Stmt;
 
@@ -50,20 +54,40 @@ public abstract class SwitchInstruction extends PseudoInstruction implements Def
    */
   protected abstract Stmt switchStatement(DexBody body, Instruction targetData, Local key);
 
+  protected abstract List<Integer> getSwitchTargetAddrs(DexBody body, Instruction targetData);
+
   public void jimplify(DexBody body) {
+    List<Integer> targetAddrs = getTargetAddrs(body);
+    for (int addr : targetAddrs) {
+      body.takeRegSnapshot(addr);
+    }
+    // hzh<huzhenghao@sbrella.com>: Also take a snapshot keyed with current address,
+    // because switch inst is deferred generation.
+    body.takeRegSnapshot(codeAddress);
+
     markerUnit = Jimple.v().newNopStmt();
     unit = markerUnit;
     body.add(markerUnit);
     body.addDeferredJimplification(this);
   }
 
+  public List<Integer> getTargetAddrs(DexBody body) {
+    int offset = ((OffsetInstruction) instruction).getCodeOffset();
+    int targetAddress = codeAddress + offset;
+    Instruction targetData = body.instructionAtAddress(targetAddress).instruction;
+    return getSwitchTargetAddrs(body, targetData);
+  }
+
   public void deferredJimplify(DexBody body) {
+    // hzh<huzhenghao@sbrella.com>: Restore Reg state before code translation
+    body.restoreRegSnapshot(codeAddress);
     int keyRegister = ((OneRegisterInstruction) instruction).getRegisterA();
     int offset = ((OffsetInstruction) instruction).getCodeOffset();
     Local key = body.getRegisterLocal(keyRegister);
     int targetAddress = codeAddress + offset;
     Instruction targetData = body.instructionAtAddress(targetAddress).instruction;
     Stmt stmt = switchStatement(body, targetData, key);
+    stmt.addTag(new UsedRegMapTag(body, codeAddress, keyRegister));
     body.getBody().getUnits().insertAfter(stmt, markerUnit);
   }
 

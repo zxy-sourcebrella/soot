@@ -41,6 +41,8 @@ import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.Jimple;
+import soot.dexpler.tags.UsedRegMapTag;
+import soot.dexpler.DexTypeInference;
 
 public class IputInstruction extends FieldInstruction {
 
@@ -55,11 +57,12 @@ public class IputInstruction extends FieldInstruction {
     int object = i.getRegisterB();
     FieldReference f = (FieldReference) ((ReferenceInstruction) instruction).getReference();
     InstanceFieldRef instanceField = Jimple.v().newInstanceFieldRef(body.getRegisterLocal(object), getSootFieldRef(f));
-    Local sourceValue = body.getRegisterLocal(source);
+    Local sourceValue = DexTypeInference.applyBackward(source, instanceField.getField().getType(), body);
     AssignStmt assign = getAssignStmt(body, sourceValue, instanceField);
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, source, object));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // Debug.printDbg(IDalvikTyper.DEBUG, "constraint: "+ assign);

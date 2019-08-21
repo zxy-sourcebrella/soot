@@ -39,11 +39,13 @@ import soot.Local;
 import soot.Type;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.CastExpr;
 import soot.jimple.Jimple;
+import soot.dexpler.tags.UsedRegMapTag;
 
 public class CheckCastInstruction extends DexlibAbstractInstruction {
 
@@ -63,14 +65,17 @@ public class CheckCastInstruction extends DexlibAbstractInstruction {
     Type checkCastType = DexType.toSoot((TypeReference) checkCastInstr.getReference());
 
     CastExpr castExpr = Jimple.v().newCastExpr(castValue, checkCastType);
+    Local target = DexTypeInference.applyForward(checkCastInstr.getRegisterA(), checkCastType, body);
 
     // generate "x = (Type) x"
     // splitter will take care of the rest
-    AssignStmt assign = Jimple.v().newAssignStmt(castValue, castExpr);
+    AssignStmt assign = Jimple.v().newAssignStmt(target, castExpr);
 
     setUnit(assign);
     addTags(assign);
     body.add(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, checkCastInstr.getRegisterA()));
+    body.setLRAssign(checkCastInstr.getRegisterA(), assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), checkCastType, false);

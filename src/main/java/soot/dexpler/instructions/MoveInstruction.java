@@ -30,8 +30,11 @@ package soot.dexpler.instructions;
 import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.iface.instruction.TwoRegisterInstruction;
 
+import soot.Local;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
@@ -49,10 +52,15 @@ public class MoveInstruction extends DexlibAbstractInstruction {
 
     int dest = i.getRegisterA();
     int source = i.getRegisterB();
-    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), body.getRegisterLocal(source));
+    DexTypeInference.checkUpdateTypeGroup(dest, source, body);
+    Local newdest = DexTypeInference.applyForward(dest, body.getRegisterLocal(source).getType(), body);
+    DexTypeInference.checkUpdateTypeGroup(dest, source, body);
+    AssignStmt assign = Jimple.v().newAssignStmt(newdest, DexTypeInference.applyBackward(source, newdest.getType(), body));
     setUnit(assign);
     addTags(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());

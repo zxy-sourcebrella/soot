@@ -997,11 +997,11 @@ public class PackManager {
       if (produceJimple) {
         Body body = m.retrieveActiveBody();
         // Change
-        CopyPropagator.v().transform(body);
-        ConditionalBranchFolder.v().transform(body);
-        UnreachableCodeEliminator.v().transform(body);
-        DeadAssignmentEliminator.v().transform(body);
-        UnusedLocalEliminator.v().transform(body);
+        // CopyPropagator.v().transform(body);
+        // ConditionalBranchFolder.v().transform(body);
+        // UnreachableCodeEliminator.v().transform(body);
+        // DeadAssignmentEliminator.v().transform(body);
+        // UnusedLocalEliminator.v().transform(body);
         PackManager.v().getPack("jtp").apply(body);
         if (Options.v().validate()) {
           body.validate();
@@ -1066,8 +1066,8 @@ public class PackManager {
     // DeadAssignmentEliminator.v().transform(body);
     // UnusedLocalEliminator.v().transform(body);
     BafBody bafBody = Baf.v().newBody(body);
-    PackManager.v().getPack("bop").apply(bafBody);
-    PackManager.v().getPack("tag").apply(bafBody);
+    //PackManager.v().getPack("bop").apply(bafBody);
+    //PackManager.v().getPack("tag").apply(bafBody);
     if (Options.v().validate()) {
       bafBody.validate();
     }

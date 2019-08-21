@@ -35,8 +35,11 @@ import soot.Local;
 import soot.RefType;
 import soot.Type;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
+import soot.jimple.CaughtExceptionRef;
 import soot.jimple.IdentityStmt;
 import soot.jimple.Jimple;
 
@@ -52,11 +55,13 @@ public class MoveExceptionInstruction extends DexlibAbstractInstruction implemen
   @Override
   public void jimplify(DexBody body) {
     int dest = ((OneRegisterInstruction) instruction).getRegisterA();
-    Local l = body.getRegisterLocal(dest);
-    stmtToRetype = Jimple.v().newIdentityStmt(l, Jimple.v().newCaughtExceptionRef());
+    CaughtExceptionRef caughtRef = Jimple.v().newCaughtExceptionRef();
+    Local l = DexTypeInference.applyForward(dest, caughtRef.getType(), body);
+    stmtToRetype = Jimple.v().newIdentityStmt(l, caughtRef);
     setUnit(stmtToRetype);
     addTags(stmtToRetype);
     body.add(stmtToRetype);
+    stmtToRetype.addTag(new UsedRegMapTag(body, codeAddress, dest));
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(stmtToRetype.getLeftOpBox(), RefType.v("java.lang.Throwable"), false);

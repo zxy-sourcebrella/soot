@@ -1002,6 +1002,11 @@ public class BafASMBackend extends AbstractASMBackend {
           }
 
           @Override
+          public void caseRefType(RefType t) {
+            mv.visitJumpInsn(Opcodes.IF_ICMPGT, getBranchTargetLabel(i.getTarget()));
+          }
+
+          @Override
           public void defaultCase(Type t) {
             throw new RuntimeException("invalid type");
           }
@@ -1052,6 +1057,11 @@ public class BafASMBackend extends AbstractASMBackend {
 
           @Override
           public void caseShortType(ShortType t) {
+            mv.visitJumpInsn(Opcodes.IF_ICMPGE, getBranchTargetLabel(i.getTarget()));
+          }
+
+          @Override
+          public void caseRefType(RefType t) {
             mv.visitJumpInsn(Opcodes.IF_ICMPGE, getBranchTargetLabel(i.getTarget()));
           }
 
@@ -1110,6 +1120,11 @@ public class BafASMBackend extends AbstractASMBackend {
           }
 
           @Override
+          public void caseRefType(RefType t) {
+            mv.visitJumpInsn(Opcodes.IF_ICMPLT, getBranchTargetLabel(i.getTarget()));
+          }
+
+          @Override
           public void defaultCase(Type t) {
             throw new RuntimeException("invalid type");
           }
@@ -1160,6 +1175,11 @@ public class BafASMBackend extends AbstractASMBackend {
 
           @Override
           public void caseShortType(ShortType t) {
+            mv.visitJumpInsn(Opcodes.IF_ICMPLE, getBranchTargetLabel(i.getTarget()));
+          }
+
+          @Override
+          public void caseRefType(RefType t) {
             mv.visitJumpInsn(Opcodes.IF_ICMPLE, getBranchTargetLabel(i.getTarget()));
           }
 
@@ -1481,6 +1501,11 @@ public class BafASMBackend extends AbstractASMBackend {
           }
 
           @Override
+          public void caseRefType(RefType t) {
+            mv.visitInsn(Opcodes.IADD);
+          }
+
+          @Override
           public void defaultCase(Type t) {
             throw new RuntimeException("invalid type");
           }
@@ -1651,6 +1676,11 @@ public class BafASMBackend extends AbstractASMBackend {
           }
 
           @Override
+          public void caseRefType(RefType t) {
+            mv.visitInsn(Opcodes.IMUL);
+          }
+
+          @Override
           public void defaultCase(Type t) {
             throw new RuntimeException("invalid type");
           }
@@ -1698,6 +1728,11 @@ public class BafASMBackend extends AbstractASMBackend {
 
           @Override
           public void caseShortType(ShortType t) {
+            mv.visitInsn(Opcodes.IREM);
+          }
+
+          @Override
+          public void caseRefType(RefType t) {
             mv.visitInsn(Opcodes.IREM);
           }
 

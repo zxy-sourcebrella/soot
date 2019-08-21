@@ -32,6 +32,7 @@ import org.jf.dexlib2.iface.instruction.Instruction;
 import soot.dexpler.DexBody;
 import soot.jimple.GotoStmt;
 import soot.jimple.Jimple;
+import soot.Unit;
 
 public class GotoInstruction extends JumpInstruction implements DeferableInstruction {
   public GotoInstruction(Instruction instruction, int codeAdress) {
@@ -39,9 +40,12 @@ public class GotoInstruction extends JumpInstruction implements DeferableInstruc
   }
 
   public void jimplify(DexBody body) {
+
+    body.takeRegSnapshot(getTargetInstruction(body).getCodeAddress());
+
     // check if target instruction has been jimplified
     if (getTargetInstruction(body).getUnit() != null) {
-      body.add(gotoStatement());
+      body.add(gotoStatement(body));
       return;
     }
     // set marker unit to swap real gotostmt with otherwise
@@ -53,11 +57,13 @@ public class GotoInstruction extends JumpInstruction implements DeferableInstruc
   }
 
   public void deferredJimplify(DexBody body) {
-    body.getBody().getUnits().insertAfter(gotoStatement(), markerUnit);
+    body.getBody().getUnits().insertAfter(gotoStatement(body), markerUnit);
   }
 
-  private GotoStmt gotoStatement() {
-    GotoStmt go = Jimple.v().newGotoStmt(targetInstruction.getUnit());
+  private GotoStmt gotoStatement(DexBody body) {
+    Unit u = body.getRelocatedStmt(targetInstruction.getCodeAddress());
+    if (u == null)  u = targetInstruction.getUnit();
+    GotoStmt go = Jimple.v().newGotoStmt(u);
     setUnit(go);
     addTags(go);
     return go;

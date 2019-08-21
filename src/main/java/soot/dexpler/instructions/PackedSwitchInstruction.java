@@ -58,23 +58,46 @@ public class PackedSwitchInstruction extends SwitchInstruction {
 
     // the default target always follows the switch statement
     int defaultTargetAddress = codeAddress + instruction.getCodeUnits();
-    Unit defaultTarget = body.instructionAtAddress(defaultTargetAddress).getUnit();
+    Unit defaultTarget = body.getRelocatedStmt(defaultTargetAddress);
+    if (defaultTarget == null)
+      defaultTarget = body.instructionAtAddress(defaultTargetAddress).getUnit();
 
     List<IntConstant> lookupValues = new ArrayList<IntConstant>();
     List<Unit> targets = new ArrayList<Unit>();
     for (SwitchElement se : seList) {
       lookupValues.add(IntConstant.v(se.getKey()));
       int offset = se.getOffset();
-      targets.add(body.instructionAtAddress(codeAddress + offset).getUnit());
+      Unit u = body.getRelocatedStmt(codeAddress + offset);
+      if (u == null) u = body.instructionAtAddress(codeAddress + offset).getUnit();
+      targets.add(u);
     }
     LookupSwitchStmt switchStmt = Jimple.v().newLookupSwitchStmt(key, lookupValues, targets, defaultTarget);
     setUnit(switchStmt);
+    addTags(switchStmt);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(switchStmt.getKeyBox(), IntType.v(), true);
     }
 
     return switchStmt;
+  }
+
+  @Override
+  protected List<Integer> getSwitchTargetAddrs(DexBody body, Instruction targetData) {
+    PackedSwitchPayload i = (PackedSwitchPayload) targetData;
+    List<? extends SwitchElement> seList = i.getSwitchElements();
+    List<Integer> targets = new ArrayList<>();
+
+    // the default target always follows the switch statement
+    int defaultTargetAddress = codeAddress + instruction.getCodeUnits();
+    targets.add(body.instructionAtAddress(defaultTargetAddress).getCodeAddress());
+
+    for (SwitchElement se : seList) {
+      int offset = se.getOffset();
+      targets.add(body.instructionAtAddress(codeAddress + offset).getCodeAddress());
+    }
+
+    return targets;
   }
 
   @Override

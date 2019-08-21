@@ -32,8 +32,11 @@ import org.jf.dexlib2.iface.instruction.OneRegisterInstruction;
 import org.jf.dexlib2.iface.instruction.ReferenceInstruction;
 import org.jf.dexlib2.iface.reference.FieldReference;
 
+import soot.Local;
 import soot.dexpler.DexBody;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
+import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
@@ -50,10 +53,13 @@ public class SgetInstruction extends FieldInstruction {
     int dest = ((OneRegisterInstruction) instruction).getRegisterA();
     FieldReference f = (FieldReference) ((ReferenceInstruction) instruction).getReference();
     StaticFieldRef r = Jimple.v().newStaticFieldRef(getStaticSootFieldRef(f));
-    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), r);
+    Local target = DexTypeInference.applyForward(dest, r.getType(), body);
+    AssignStmt assign = Jimple.v().newAssignStmt(target, r);
     setUnit(assign);
     addTags(assign);
+    assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
     body.add(assign);
+    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), r.getType(), false);

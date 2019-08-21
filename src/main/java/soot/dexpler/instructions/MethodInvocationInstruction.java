@@ -54,6 +54,7 @@ import soot.SootResolver;
 import soot.Type;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
+import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
@@ -62,6 +63,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.MethodHandle.Kind;
+import soot.dexpler.tags.UsedRegMapTag;
 
 public abstract class MethodInvocationInstruction extends DexlibAbstractInstruction implements DanglingInstruction {
 
@@ -81,16 +83,28 @@ public abstract class MethodInvocationInstruction extends DexlibAbstractInstruct
       // i.setExpr(invocation);
       // if (lineNumber != -1)
       // i.setTag(new SourceLineNumberTag(lineNumber));
-      assign = Jimple.v().newAssignStmt(body.getStoreResultLocal(), invocation);
+      Local target = DexTypeInference.applyForward(-1, invocation.getMethodRef().returnType(), body);
+      assign = Jimple.v().newAssignStmt(target, invocation);
       setUnit(assign);
       addTags(assign);
+      UsedRegMapTag regmapping = new UsedRegMapTag();
+      for (int i : getUsedRegistersNums()) {
+        regmapping.setRegMapping(body, codeAddress, i);
+      }
+      assign.addTag(regmapping);
       body.add(assign);
+      body.setLRAssign(-1, assign);
       unit = assign;
       // this is a invoke statement (the MoveResult had to be the direct successor for an expression)
     } else {
       InvokeStmt invoke = Jimple.v().newInvokeStmt(invocation);
       setUnit(invoke);
       addTags(invoke);
+      UsedRegMapTag regmapping = new UsedRegMapTag();
+      for (int i : getUsedRegistersNums()) {
+        regmapping.setRegMapping(body, codeAddress, i);
+      }
+      invoke.addTag(regmapping);
       body.add(invoke);
       unit = invoke;
     }
@@ -334,13 +348,20 @@ public abstract class MethodInvocationInstruction extends DexlibAbstractInstruct
     // i: index for register
     // j: index for parameter type
     for (int i = 0, j = 0; i < regs.size(); i++, j++) {
-      parameters.add(body.getRegisterLocal(regs.get(i)));
+      if (paramTypes == null || (!isStatic && i == 0)) {
+        parameters.add(body.getRegisterLocal(regs.get(i)));
+      } else {
+        Type t = DexType.toSoot(paramTypes.get(j).toString());
+        parameters.add(DexTypeInference.applyBackward(regs.get(i), t, body));
+      }
+
       // if method is non-static the first parameter is the instance
       // pointer and has no corresponding parameter type
       if (!isStatic && i == 0) {
         j--;
         continue;
       }
+
       // If current parameter is wide ignore the next register.
       // No need to increment j as there is one parameter type
       // for those two registers.
