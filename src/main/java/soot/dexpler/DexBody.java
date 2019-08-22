@@ -138,7 +138,6 @@ public class DexBody {
   private Map<Integer, Map<Integer, AssignStmt>> historyDefs;
   private Map<Integer, AssignStmt> lastRecentAssign;
   private Map<Integer, AssignStmt> instRelocateHelper;
-  private Map<Integer, DexlibAbstractInstruction> instructionAtAddress;
 
   protected List<DeferableInstruction> deferredInstructions;
   protected Set<RetypeableInstruction> instructionsToRetype;
