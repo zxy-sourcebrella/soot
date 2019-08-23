@@ -696,8 +696,15 @@ public class PackManager {
 
     while (classes.hasNext()) {
       final SootClass c = classes.next();
-      executor.execute(() -> writeClass(c));
+      executor.execute(new Runnable() {
+        @Override
+        public void run() {
+          writeClass(c);
+        }
+      });
     }
+
+
 
     // Wait till all classes have been written
     try {
