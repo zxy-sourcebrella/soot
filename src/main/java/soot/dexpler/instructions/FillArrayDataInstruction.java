@@ -52,7 +52,6 @@ import soot.ShortType;
 import soot.Type;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
-import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.DoubleConstant;
@@ -106,7 +105,6 @@ public class FillArrayDataInstruction extends PseudoInstruction {
       AssignStmt assign = Jimple.v().newAssignStmt(arrayRef, element);
       addTags(assign);
       body.add(assign);
-      assign.addTag(new UsedRegMapTag(body, codeAddress, destRegister));
       if (i == 0) {
         firstAssign = assign;
       }

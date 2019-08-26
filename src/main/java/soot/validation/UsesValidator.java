@@ -94,7 +94,7 @@ public enum UsesValidator implements BodyValidator {
             assert graphEdgesAreValid(g, u) : "broken graph found: " + u;
 
             exception.add(new ValidationException(u, "There is no path from a definition of " + v + " to this statement.",
-                "(" + body.getMethod() + ") no defs for value: " + l + "!"));
+                "(" + body.getMethod() + ") no defs for value: " + l + "!" + " See body: " + body.toString()));
           }
         }
       }

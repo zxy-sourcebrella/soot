@@ -36,17 +36,13 @@ import org.jf.dexlib2.iface.instruction.TwoRegisterInstruction;
 import org.jf.dexlib2.iface.instruction.formats.Instruction22c;
 import org.jf.dexlib2.iface.reference.TypeReference;
 
-import soot.IntType;
-import soot.Local;
 import soot.Type;
 import soot.dexpler.DexBody;
 import soot.dexpler.DexType;
-import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceOfExpr;
 import soot.jimple.Jimple;
-import soot.dexpler.tags.UsedRegMapTag;
 
 public class InstanceOfInstruction extends DexlibAbstractInstruction {
 
@@ -63,13 +59,10 @@ public class InstanceOfInstruction extends DexlibAbstractInstruction {
     Type t = DexType.toSoot((TypeReference) (i.getReference()));
 
     InstanceOfExpr e = Jimple.v().newInstanceOfExpr(body.getRegisterLocal(source), t);
-    Local target = DexTypeInference.applyForward(dest, IntType.v(), body);
-    AssignStmt assign = Jimple.v().newAssignStmt(target, e);
+    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), e);
     setUnit(assign);
     addTags(assign);
     body.add(assign);
-    assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
-    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       // DalvikTyper.v().?

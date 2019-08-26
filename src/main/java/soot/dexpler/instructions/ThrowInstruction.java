@@ -33,7 +33,6 @@ import org.jf.dexlib2.iface.instruction.formats.Instruction11x;
 import soot.RefType;
 import soot.dexpler.DexBody;
 import soot.dexpler.IDalvikTyper;
-import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.Jimple;
 import soot.jimple.ThrowStmt;
@@ -50,7 +49,6 @@ public class ThrowInstruction extends DexlibAbstractInstruction {
     ThrowStmt throwStmt = Jimple.v().newThrowStmt(body.getRegisterLocal(throwInstruction.getRegisterA()));
     setUnit(throwStmt);
     addTags(throwStmt);
-    throwStmt.addTag(new UsedRegMapTag(body, codeAddress, throwInstruction.getRegisterA()));
     body.add(throwStmt);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {

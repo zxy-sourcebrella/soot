@@ -33,11 +33,8 @@ import org.jf.dexlib2.iface.instruction.formats.Instruction21c;
 import org.jf.dexlib2.iface.instruction.formats.Instruction31c;
 import org.jf.dexlib2.iface.reference.StringReference;
 
-import soot.Local;
 import soot.dexpler.DexBody;
-import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
-import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.AssignStmt;
 import soot.jimple.Jimple;
@@ -63,13 +60,10 @@ public class ConstStringInstruction extends DexlibAbstractInstruction {
       throw new IllegalArgumentException("Expected Instruction21c or Instruction31c but got neither.");
     }
     StringConstant sc = StringConstant.v(s);
-    Local target = DexTypeInference.applyForward(dest, sc.getType(), body);
-    AssignStmt assign = Jimple.v().newAssignStmt(target, sc);
+    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), sc);
     setUnit(assign);
     addTags(assign);
     body.add(assign);
-    assign.addTag(new UsedRegMapTag(body, codeAddress, dest));
-    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().setType(assign.getLeftOpBox(), sc.getType(), false);

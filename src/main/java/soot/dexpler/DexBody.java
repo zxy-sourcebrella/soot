@@ -801,9 +801,9 @@ public class DexBody {
         }
       }
     }
-    if (dangling != null) {
-      dangling.finalize(this, null);
-    }
+    // if (dangling != null) {
+    //   dangling.finalize(this, null);
+    // }
     for (DeferableInstruction instruction : deferredInstructions) {
       instruction.deferredJimplify(this);
     }
@@ -1136,6 +1136,7 @@ public class DexBody {
       // is Int Type
       } if (t instanceof UnknownType) {
         l.setType(IntType.v());
+        l.setType(objectType);
       }
     }
     

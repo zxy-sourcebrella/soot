@@ -32,16 +32,12 @@ import org.jf.dexlib2.iface.instruction.Instruction;
 import org.jf.dexlib2.iface.instruction.OneRegisterInstruction;
 import org.jf.dexlib2.iface.instruction.formats.Instruction23x;
 
-import soot.ArrayType;
 import soot.IntType;
 import soot.Local;
-import soot.Type;
 import soot.dexpler.DexBody;
-import soot.dexpler.DexTypeInference;
 import soot.dexpler.IDalvikTyper;
 import soot.dexpler.InvalidDalvikBytecodeException;
 import soot.dexpler.tags.ObjectOpTag;
-import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
@@ -62,20 +58,11 @@ public class AgetInstruction extends DexlibAbstractInstruction {
     Instruction23x aGetInstr = (Instruction23x) instruction;
     int dest = aGetInstr.getRegisterA();
 
-    Local arrayBase = DexTypeInference.applyBackward(aGetInstr.getRegisterB(), IntType.v().makeArrayType(), body);
+    Local arrayBase = body.getRegisterLocal(aGetInstr.getRegisterB());
     Local index = body.getRegisterLocal(aGetInstr.getRegisterC());
 
     ArrayRef arrayRef = Jimple.v().newArrayRef(arrayBase, index);
-    Local l;
-    Type elemTy;
-    if (arrayBase.getType() instanceof ArrayType) {
-      elemTy = ((ArrayType) arrayBase.getType()).getElementType();
-    } else {
-      // hzh<huzhenghao@sbrella.com>: In case arrayBase is not ArrayType, reuse the
-      // dest reg type (IntType if Unknown)
-      elemTy = DexTypeInference.applyBackward(dest, IntType.v(), body).getType();
-    }
-    l = DexTypeInference.applyForward(dest, elemTy, body);
+    Local l = body.getRegisterLocal(dest);
 
     AssignStmt assign = Jimple.v().newAssignStmt(l, arrayRef);
     if (aGetInstr.getOpcode() == Opcode.AGET_OBJECT) {
@@ -85,9 +72,6 @@ public class AgetInstruction extends DexlibAbstractInstruction {
     setUnit(assign);
     addTags(assign);
     body.add(assign);
-    assign.addTag(new UsedRegMapTag(body, codeAddress,
-                dest, aGetInstr.getRegisterB(), aGetInstr.getRegisterC()));
-    body.setLRAssign(dest, assign);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       DalvikTyper.v().addConstraint(assign.getLeftOpBox(), assign.getRightOpBox());

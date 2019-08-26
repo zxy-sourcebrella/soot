@@ -33,11 +33,9 @@ import org.jf.dexlib2.iface.instruction.formats.Instruction11x;
 import soot.Local;
 import soot.dexpler.DexBody;
 import soot.dexpler.IDalvikTyper;
-import soot.dexpler.tags.UsedRegMapTag;
 import soot.dexpler.typing.DalvikTyper;
 import soot.jimple.Jimple;
 import soot.jimple.ReturnStmt;
-import soot.dexpler.DexTypeInference;
 
 public class ReturnInstruction extends DexlibAbstractInstruction {
 
@@ -48,11 +46,10 @@ public class ReturnInstruction extends DexlibAbstractInstruction {
   @Override
   public void jimplify(DexBody body) {
     Instruction11x returnInstruction = (Instruction11x) this.instruction;
-    Local l = DexTypeInference.applyBackward(returnInstruction.getRegisterA(), body.getBody().getMethod().getReturnType(), body);
+    Local l = body.getRegisterLocal(returnInstruction.getRegisterA());
     ReturnStmt returnStmt = Jimple.v().newReturnStmt(l);
     setUnit(returnStmt);
     addTags(returnStmt);
-    returnStmt.addTag(new UsedRegMapTag(body, codeAddress, returnInstruction.getRegisterA()));
     body.add(returnStmt);
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {

@@ -34,13 +34,10 @@ import org.jf.dexlib2.iface.instruction.TwoRegisterInstruction;
 import org.jf.dexlib2.iface.instruction.formats.Instruction22b;
 import org.jf.dexlib2.iface.instruction.formats.Instruction22s;
 
-import soot.IntType;
 import soot.Local;
 import soot.Value;
 import soot.dexpler.DexBody;
-import soot.dexpler.DexTypeInference;
 import soot.dexpler.tags.IntOpTag;
-import soot.dexpler.tags.UsedRegMapTag;
 import soot.jimple.AssignStmt;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
@@ -61,22 +58,18 @@ public class BinopLitInstruction extends TaggedInstruction {
     int dest = ((TwoRegisterInstruction) instruction).getRegisterA();
     int source = ((TwoRegisterInstruction) instruction).getRegisterB();
 
-    DexTypeInference.checkUpdateTypeGroup(dest, source, body);
-    Local source1 = DexTypeInference.applyBackward(source, IntType.v(), body);
+    Local source1 = body.getRegisterLocal(source);
 
     IntConstant constant = IntConstant.v(binOpLitInstr.getNarrowLiteral());
 
     Value expr = getExpression(source1, constant);
-    Local target = DexTypeInference.applyForward(dest, IntType.v(), body);
 
-    AssignStmt assign = Jimple.v().newAssignStmt(target, expr);
+    AssignStmt assign = Jimple.v().newAssignStmt(body.getRegisterLocal(dest), expr);
     assign.addTag(getTag());
 
     setUnit(assign);
     addTags(assign);
     body.add(assign);
-    assign.addTag(new UsedRegMapTag(body, codeAddress, dest, source));
-    body.setLRAssign(dest, assign);
 
     /*
      * if (IDalvikTyper.ENABLE_DVKTYPER) { Debug.printDbg(IDalvikTyper.DEBUG, "constraint: "+ assign);
