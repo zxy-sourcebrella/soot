@@ -59,8 +59,10 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.JimpleBody;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.scalar.ConstantPropagatorAndFolder;
+import soot.jimple.toolkits.scalar.DeadAssignmentEliminator;
 import soot.options.JBTROptions;
 import soot.options.Options;
+import soot.toolkits.scalar.UnusedLocalEliminator;
 
 /**
  * This transformer assigns types to local variables.
@@ -216,8 +218,8 @@ public class TypeAssigner extends BodyTransformer {
     }
 
     // should be done on a separate phase
-    // DeadAssignmentEliminator.v().transform(b);
-    // UnusedLocalEliminator.v().transform(b);
+    DeadAssignmentEliminator.v().transform(b);
+    UnusedLocalEliminator.v().transform(b);
 
   }
 

@@ -124,7 +124,7 @@ public class DexNullArrayRefTransformer extends BodyTransformer {
     }
 
     if (changed) {
-      // UnreachableCodeEliminator.v().transform(body);
+      UnreachableCodeEliminator.v().transform(body);
     }
   }
 

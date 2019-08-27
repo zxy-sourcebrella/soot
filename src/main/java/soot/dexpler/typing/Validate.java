@@ -52,7 +52,11 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.Jimple;
 import soot.jimple.NewArrayExpr;
 import soot.jimple.StringConstant;
+import soot.jimple.toolkits.scalar.DeadAssignmentEliminator;
+import soot.jimple.toolkits.scalar.NopEliminator;
+import soot.jimple.toolkits.scalar.UnreachableCodeEliminator;
 import soot.toolkits.scalar.LocalDefs;
+import soot.toolkits.scalar.UnusedLocalEliminator;
 
 public class Validate {
 
@@ -220,10 +224,10 @@ public class Validate {
       // Exception a = throw new Exception();
     }
 
-    // DeadAssignmentEliminator.v().transform(b);
-    // UnusedLocalEliminator.v().transform(b);
-    // NopEliminator.v().transform(b);
-    // UnreachableCodeEliminator.v().transform(b);
+    DeadAssignmentEliminator.v().transform(b);
+    UnusedLocalEliminator.v().transform(b);
+    NopEliminator.v().transform(b);
+    UnreachableCodeEliminator.v().transform(b);
 
   }
 

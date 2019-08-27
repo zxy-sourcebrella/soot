@@ -39,6 +39,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.Constant;
 import soot.jimple.Stmt;
 import soot.options.Options;
+import soot.toolkits.scalar.UnusedLocalEliminator;
 
 /**
  * Transformer that simplifies array initializations. It converts
@@ -196,7 +197,7 @@ public class DexArrayInitReducer extends BodyTransformer {
     }
 
     // Remove all locals that are no longer necessary
-    // UnusedLocalEliminator.v().transform(b);
+    UnusedLocalEliminator.v().transform(b);
   }
 
 }
