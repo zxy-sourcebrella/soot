@@ -31,6 +31,8 @@ import soot.AbstractUnit;
 import soot.UnitPrinter;
 import soot.dava.toolkits.base.AST.ASTAnalysis;
 import soot.dava.toolkits.base.AST.analysis.Analysis;
+import soot.tagkit.LineNumberTag;
+import soot.tagkit.Tag;
 
 public abstract class ASTNode extends AbstractUnit {
   public static final String TAB = "    ", NEWLINE = "\n";
@@ -60,7 +62,6 @@ public abstract class ASTNode extends AbstractUnit {
     Iterator<Object> it = body.iterator();
     while (it.hasNext()) {
       b.append(((ASTNode) it.next()).toString());
-
       if (it.hasNext()) {
         b.append(NEWLINE);
       }

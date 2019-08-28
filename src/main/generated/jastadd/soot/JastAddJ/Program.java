@@ -324,7 +324,7 @@ public class Program extends ASTNode<ASTNode> implements Cloneable {
     if(!pathsInitialized) {
       pathsInitialized = true;
 
-      //System.err.println("Initializing class paths");
+      System.err.println("Initializing class paths");
       
       ArrayList classPaths = new ArrayList();
       ArrayList sourcePaths = new ArrayList();
@@ -336,7 +336,7 @@ public class Program extends ASTNode<ASTNode> implements Cloneable {
         bootclasspaths = System.getProperty("sun.boot.class.path").split(File.pathSeparator);
       for(int i = 0; i < bootclasspaths.length; i++) {
         classPaths.add(bootclasspaths[i]);
-        //System.err.println("Adding classpath " + bootclasspaths[i]);
+        System.err.println("Adding bootclasspath " + bootclasspaths[i]);
       }
       
       String[] extdirs;

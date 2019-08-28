@@ -81,6 +81,7 @@ public class SootResolver {
       program.options().initOptions();
       program.options().addKeyValueOption("-classpath");
       program.options().setValueForOption(Scene.v().getSootClassPath(), "-classpath");
+      program.options().addKeyValueOption("-bootclasspath");
       program.options().setValueForOption(Options.v().soot_bootclasspath(), "-bootclasspath");
       if (Options.v().src_prec() == Options.src_prec_java) {
         program.setSrcPrec(Program.SRC_PREC_JAVA);
