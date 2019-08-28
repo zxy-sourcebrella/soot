@@ -616,14 +616,8 @@ public class Scene // extends AbstractHost
       } else {
         androidAPIVersion = defaultSdkVersion;
       }
-//<<<<<<< HEAD
-//    } else if (androidJars != null && !androidJars.isEmpty()) {
-//      List<String> classPathEntries
-//          = new LinkedList<String>(Arrays.asList(Options.v().soot_classpath().split(File.pathSeparator)));
-//=======
     } else /*if (androidJars != null && !androidJars.isEmpty())*/ {
       List<String> classPathEntries = new LinkedList<String>(Arrays.asList(Options.v().soot_classpath().split(File.pathSeparator)));
-//>>>>>>> origin/develop
       classPathEntries.addAll(Options.v().process_dir());
 
       String targetApk = "";

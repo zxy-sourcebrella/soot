@@ -119,10 +119,6 @@ public class DexBody {
   protected Local[] registerLocals;
   protected Local storeResultLocal;
   protected Map<Integer, DexlibAbstractInstruction> instructionAtAddress;
-  private Map<Integer, Map<Integer, Local>> regSnapshotAtAddress;
-  private Map<Integer, Map<Integer, AssignStmt>> historyDefs;
-  private Map<Integer, AssignStmt> lastRecentAssign;
-  private Map<Integer, AssignStmt> instRelocateHelper;
 
   protected List<DeferableInstruction> deferredInstructions;
   protected Set<RetypeableInstruction> instructionsToRetype;
@@ -240,10 +236,6 @@ public class DexBody {
     localDebugs = new HashMap<Integer, LinkedList<LocalDebug>>();
 
     registerLocals = new Local[numRegisters];
-    regSnapshotAtAddress = new HashMap<>();
-    historyDefs = new HashMap<>();
-    lastRecentAssign = new HashMap<>();
-    instRelocateHelper = new HashMap<>();
 
     extractDexInstructions(code);
 
@@ -262,7 +254,6 @@ public class DexBody {
           continue;
         }
         ins.setLineNumber(ln.getLineNumber());
-        System.out.printf("Set an instruction %d 's lineno to %d\n", ln.getCodeAddress(), ln.getLineNumber());
       } else if (di instanceof ImmutableStartLocal
               || di instanceof ImmutableRestartLocal) {
         LinkedList<LocalDebug> lds;
@@ -326,7 +317,6 @@ public class DexBody {
    */
   protected void extractDexInstructions(MethodImplementation code) {
     int address = 0;
-    address = 0;
 
     for (Instruction instruction : code.getInstructions()) {
       DexlibAbstractInstruction dexInstruction = fromInstruction(instruction, address);
@@ -629,10 +619,6 @@ public class DexBody {
         throw new RuntimeException(e);
       }
     }
-    System.out.println("Start a new body");
-    for (DexlibAbstractInstruction instruction : instructions) {
-      System.out.printf("Addr %x from %d\n", instruction.getCodeAddress(), instruction.getLineNumber());
-    }
 
     int prevLineNumber = -1;
     for (DexlibAbstractInstruction instruction : instructions) {
@@ -654,35 +640,9 @@ public class DexBody {
     if (dangling != null) {
       dangling.finalize(this, null);
     }
-    System.out.printf("====================0\n");
-    for (Unit unit : jBody.getUnits()) {
-      if((unit instanceof  Stmt)) {
-        Tag t = unit.getTag("LineNumberTag");
-        if (t instanceof LineNumberTag) {
-          LineNumberTag lt = (LineNumberTag) t;
-          System.out.printf("[Before cleaning](%b) %s with tag %d\n", unit instanceof Stmt, unit.toString(), lt.getLineNumber());
-        } else {
-          System.out.printf("[Before cleaning] no tag for %s\n", unit.toString());
-        }
-      }
-    }
-    System.out.printf("====================\n");
     for (DeferableInstruction instruction : deferredInstructions) {
       instruction.deferredJimplify(this);
     }
-    System.out.printf("====================A0\n");
-    for (Unit unit : jBody.getUnits()) {
-      if((unit instanceof  Stmt)) {
-        Tag t = unit.getTag("LineNumberTag");
-        if (t instanceof LineNumberTag) {
-          LineNumberTag lt = (LineNumberTag) t;
-          System.out.printf("[Before cleaning](%b) %s with tag %d\n", unit instanceof Stmt, unit.toString(), lt.getLineNumber());
-        } else {
-          System.out.printf("[Before cleaning] no tag for %s\n", unit.toString());
-        }
-      }
-    }
-    System.out.printf("====================\n");
 
     if (tries != null) {
       addTraps();
@@ -691,21 +651,6 @@ public class DexBody {
     if (options.keep_line_number()) {
       fixLineNumbers();
     }
-
-
-    System.out.printf("====================\n");
-    for (Unit unit : jBody.getUnits()) {
-      if((unit instanceof  Stmt)) {
-        Tag t = unit.getTag("LineNumberTag");
-        if (t instanceof LineNumberTag) {
-          LineNumberTag lt = (LineNumberTag) t;
-          System.out.printf("[Before cleaning](%b) %s with tag %d\n", unit instanceof Stmt, unit.toString(), lt.getLineNumber());
-        } else {
-          System.out.printf("[Before cleaning] no tag for %s\n", unit.toString());
-        }
-      }
-    }
-    System.out.printf("====================\n");
 
 
     // At this point Jimple code is generated
@@ -735,37 +680,24 @@ public class DexBody {
      */
 
     // Fix traps that do not catch exceptions
-    // DexTrapStackFixer.v().transform(jBody);
+    DexTrapStackFixer.v().transform(jBody);
 
     // Sort out jump chains
-    // DexJumpChainShortener.v().transform(jBody);
+    DexJumpChainShortener.v().transform(jBody);
 
     // Make sure that we don't have any overlapping uses due to returns
     DexReturnInliner.v().transform(jBody);
-    System.out.printf("====================2\n");
-    for (Unit unit : jBody.getUnits()) {
-      if((unit instanceof  Stmt)) {
-        Tag t = unit.getTag("LineNumberTag");
-        if (t instanceof LineNumberTag) {
-          LineNumberTag lt = (LineNumberTag) t;
-          System.out.printf("[Before cleaning](%b) %s with tag %d\n", unit instanceof Stmt, unit.toString(), lt.getLineNumber());
-        } else {
-          System.out.printf("[Before cleaning] no tag for %s\n", unit.toString());
-        }
-      }
-    }
-    System.out.printf("====================\n");
 
     // Shortcut: Reduce array initializations
     DexArrayInitReducer.v().transform(jBody);
 
     // split first to find undefined uses
-    // getLocalSplitter().transform(jBody);
+    getLocalSplitter().transform(jBody);
 
-    // // Remove dead code and the corresponding locals before assigning types
-    // getUnreachableCodeEliminator().transform(jBody);
-    // DeadAssignmentEliminator.v().transform(jBody);
-    // UnusedLocalEliminator.v().transform(jBody);
+    // Remove dead code and the corresponding locals before assigning types
+    getUnreachableCodeEliminator().transform(jBody);
+    DeadAssignmentEliminator.v().transform(jBody);
+    UnusedLocalEliminator.v().transform(jBody);
 
     for (RetypeableInstruction i : instructionsToRetype)
      i.retype(jBody);
@@ -783,19 +715,6 @@ public class DexBody {
     // instructions.remove(i);
     // }
     // }
-    System.out.printf("====================3\n");
-    for (Unit unit : jBody.getUnits()) {
-      if((unit instanceof  Stmt)) {
-        Tag t = unit.getTag("LineNumberTag");
-        if (t instanceof LineNumberTag) {
-          LineNumberTag lt = (LineNumberTag) t;
-          System.out.printf("[Before cleaning](%b) %s with tag %d\n", unit instanceof Stmt, unit.toString(), lt.getLineNumber());
-        } else {
-          System.out.printf("[Before cleaning] no tag for %s\n", unit.toString());
-        }
-      }
-    }
-    System.out.printf("====================\n");
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
 
@@ -837,19 +756,6 @@ public class DexBody {
       // DexRefsChecker.v().transform(jBody);
       DexNullArrayRefTransformer.v().transform(jBody);
     }
-    System.out.printf("====================3\n");
-    for (Unit unit : jBody.getUnits()) {
-      if((unit instanceof  Stmt)) {
-        Tag t = unit.getTag("LineNumberTag");
-        if (t instanceof LineNumberTag) {
-          LineNumberTag lt = (LineNumberTag) t;
-          System.out.printf("[Before cleaning](%b) %s with tag %d\n", unit instanceof Stmt, unit.toString(), lt.getLineNumber());
-        } else {
-          System.out.printf("[Before cleaning] no tag for %s\n", unit.toString());
-        }
-      }
-    }
-    System.out.printf("====================\n");
 
     if (IDalvikTyper.ENABLE_DVKTYPER) {
       for (Local l : jBody.getLocals()) {
@@ -860,10 +766,12 @@ public class DexBody {
     // Remove "instanceof" checks on the null constant
     DexNullInstanceofTransformer.v().transform(jBody);
 
-    TypeAssigner.v().transform(jBody, "",  new HashMap<String, String>() {{
-      put("enabled", "true");
-      put("ignore-nullpointer-dereferences", "true");
-    }});
+    TypeAssigner.v().transform(jBody);
+
+    // TypeAssigner.v().transform(jBody, "",  new HashMap<String, String>() {{
+    //   put("enabled", "true");
+    //   put("ignore-nullpointer-dereferences", "true");
+    // }});
 
     final RefType objectType = RefType.v("java.lang.Object");
     if (IDalvikTyper.ENABLE_DVKTYPER) {
@@ -976,19 +884,6 @@ public class DexBody {
       FieldStaticnessCorrector.v().transform(jBody);
       MethodStaticnessCorrector.v().transform(jBody);
     }
-    System.out.printf("====================4\n");
-    for (Unit unit : jBody.getUnits()) {
-      if(unit instanceof  Stmt) {
-        Tag t = unit.getTag("LineNumberTag");
-        if (t instanceof LineNumberTag) {
-          LineNumberTag lt = (LineNumberTag) t;
-          System.out.printf("[Before cleaning](%b) %s with tag %d\n", unit instanceof Stmt, unit.toString(), lt.getLineNumber());
-        } else {
-          System.out.printf("[Before cleaning] no tag for %s\n", unit.toString());
-        }
-      }
-    }
-    System.out.printf("====================\n");
 
     // Inline PackManager.v().getPack("jb").apply(jBody);
     // Keep only transformations that have not been done
@@ -1008,11 +903,11 @@ public class DexBody {
     ConditionalBranchFolder.v().transform(jBody);
 
     // Remove unnecessary typecasts
-    // ConstantCastEliminator.v().transform(jBody);
-    // IdentityCastEliminator.v().transform(jBody);
+    ConstantCastEliminator.v().transform(jBody);
+    IdentityCastEliminator.v().transform(jBody);
 
     // Remove unnecessary logic operations
-    // IdentityOperationEliminator.v().transform(jBody);
+    IdentityOperationEliminator.v().transform(jBody);
 
     // We need to run this transformer since the conditional branch folder
     // might have rendered some code unreachable (well, it was unreachable
@@ -1031,7 +926,7 @@ public class DexBody {
     NopEliminator.v().transform(jBody);
 
     // Remove unnecessary chains of return statements
-    // DexReturnPacker.v().transform(jBody);
+    DexReturnPacker.v().transform(jBody);
 
     for (Unit u : jBody.getUnits()) {
       if (u instanceof AssignStmt) {
@@ -1081,18 +976,6 @@ public class DexBody {
     // PackManager.v().getTransform("jb.lns").apply(jBody);
 
     // t_whole_jimplification.end();
-
-    System.out.printf(">>>>>>>>>>>>>>>>>\n");
-    for (Unit unit : jBody.getUnits()) {
-      Tag t = unit.getTag("LineNumberTag");
-      if (t instanceof LineNumberTag) {
-        LineNumberTag lt = (LineNumberTag) t;
-        System.out.printf("%s with tag %d\n", unit.toString(), lt.getLineNumber());
-      } else {
-        System.out.printf("no tag for %s\n", unit.toString());
-      }
-    }
-    System.out.printf(">>>>>>>>>>>>>>>>>\n");
 
     return jBody;
   }

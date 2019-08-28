@@ -144,14 +144,9 @@ class ConstraintChecker extends AbstractStmtSwitch {
     for (int i = 0; i < ie.getArgCount(); i++) {
       if (ie.getArg(i) instanceof Local) {
         Local local = (Local) ie.getArg(i);
-//<<<<<<< HEAD
-//        if (local.getType() instanceof IntegerType) {
-//          if (!ClassHierarchy.v().typeNode(local.getType())
-//              .hasAncestor_1(ClassHierarchy.v().typeNode(method.parameterType(i)))) {
-//=======
         if (local.getType() instanceof IntegerType && method.parameterType(i) instanceof IntegerType) {
-          if (!ClassHierarchy.v().typeNode(local.getType()).hasAncestor_1(ClassHierarchy.v().typeNode(method.parameterType(i)))) {
-//>>>>>>> origin/develop
+          if (!ClassHierarchy.v().typeNode(local.getType())
+              .hasAncestor_1(ClassHierarchy.v().typeNode(method.parameterType(i)))) {
             if (fix) {
               ie.setArg(i, insertCast(local, method.parameterType(i), invokestmt));
             } else {
