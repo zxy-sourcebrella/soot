@@ -108,8 +108,17 @@ public class BafBody extends Body {
         Stmt s = (Stmt) u;
         List<Unit> conversionList = new ArrayList<Unit>();
 
-        context.setCurrentUnit(s);
-        ((ConvertToBaf) s).convertToBaf(context, conversionList);
+        try {
+          context.setCurrentUnit(s);
+          ((ConvertToBaf) s).convertToBaf(context, conversionList);
+        } catch (Exception e) {
+          System.err.println(e);
+          System.err.println(s.toString());
+          System.err.println("in body: =====================");
+          System.err.println(jimpleBody.toString());
+          Thread.dumpStack();
+          System.exit(1);
+        }
 
         stmtToFirstInstruction.put(s, conversionList.get(0));
         getUnits().addAll(conversionList);

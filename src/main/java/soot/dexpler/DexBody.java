@@ -422,20 +422,8 @@ public class DexBody {
     return registerLocals[num];
   }
 
-  public void setRegisterLocal(int num, Local reg) {
-    if (num < registerLocals.length) {
-      registerLocals[num] = reg;
-    } else {
-      throw new InvalidDalvikBytecodeException("Trying to access register " + num + " but only " + registerLocals.length + " is/are available.");
-    }
-  }
-
   public Local getStoreResultLocal() {
     return storeResultLocal;
-  }
-
-  public void setStoreResultLocal(Local newlocal) {
-    storeResultLocal = newlocal;
   }
 
   /**
@@ -891,7 +879,7 @@ public class DexBody {
     TrapTightener.v().transform(jBody);
     TrapMinimizer.v().transform(jBody);
     // LocalSplitter.v().transform(jBody);
-    Aggregator.v().transform(jBody);
+    // Aggregator.v().transform(jBody);
     // UnusedLocalEliminator.v().transform(jBody);
     // TypeAssigner.v().transform(jBody);
     // LocalPacker.v().transform(jBody);
