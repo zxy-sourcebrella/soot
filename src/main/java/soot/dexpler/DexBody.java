@@ -684,7 +684,7 @@ public class DexBody {
 
     // Remove dead code and the corresponding locals before assigning types
     getUnreachableCodeEliminator().transform(jBody);
-    DeadAssignmentEliminator.v().transform(jBody);
+    // DeadAssignmentEliminator.v().transform(jBody);
     UnusedLocalEliminator.v().transform(jBody);
 
     for (RetypeableInstruction i : instructionsToRetype)
@@ -728,7 +728,7 @@ public class DexBody {
       // t_num.end();
 
       DexReturnValuePropagator.v().transform(jBody);
-      getCopyPopagator().transform(jBody);
+      // getCopyPopagator().transform(jBody);
 
       DexNullThrowTransformer.v().transform(jBody);
 
@@ -738,7 +738,7 @@ public class DexBody {
 
       DexIfTransformer.v().transform(jBody);
 
-      DeadAssignmentEliminator.v().transform(jBody);
+      // DeadAssignmentEliminator.v().transform(jBody);
       UnusedLocalEliminator.v().transform(jBody);
 
       // DexRefsChecker.v().transform(jBody);
@@ -860,7 +860,7 @@ public class DexBody {
 
     // We pack locals that are not used in overlapping regions. This may
     // again lead to unused locals which we have to remove.
-    LocalPacker.v().transform(jBody);
+    // LocalPacker.v().transform(jBody);
     UnusedLocalEliminator.v().transform(jBody);
     // PackManager.v().getTransform("jb.lns").apply(jBody);
     // LocalNameStandardizer.v().transform(jBody);
@@ -909,12 +909,12 @@ public class DexBody {
     // we might have gotten new dead assignments and unused locals through
     // copy propagation and unreachable code elimination, so we have to do
     // this again
-    DeadAssignmentEliminator.v().transform(jBody);
+    // DeadAssignmentEliminator.v().transform(jBody);
     UnusedLocalEliminator.v().transform(jBody);
     NopEliminator.v().transform(jBody);
 
     // Remove unnecessary chains of return statements
-    DexReturnPacker.v().transform(jBody);
+    // DexReturnPacker.v().transform(jBody);
 
     for (Unit u : jBody.getUnits()) {
       if (u instanceof AssignStmt) {
