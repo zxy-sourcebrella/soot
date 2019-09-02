@@ -1180,12 +1180,6 @@ public class PhaseOptionsDialog extends AbstractOptionsDialog implements Selecti
 		if ((!(stringRes.equals(defStringRes))) && (stringRes != null) && (stringRes.length() != 0)) {
 			getConfig().put(getInput_Optionssoot_modulepath_widget().getAlias(), stringRes);
 		}
-		stringRes = getInput_Optionssoot_bootclasspath_widget().getText().getText();
-		defStringRes = "";
-
-		if ((!(stringRes.equals(defStringRes))) && (stringRes != null) && (stringRes.length() != 0)) {
-			getConfig().put(getInput_Optionssoot_bootclasspath_widget().getAlias(), stringRes);
-		}
 		stringRes = getInput_Optionsprocess_dir_widget().getText().getText();
 		defStringRes = "";
 
@@ -4782,18 +4776,6 @@ public class PhaseOptionsDialog extends AbstractOptionsDialog implements Selecti
 	
 	public StringOptionWidget getInput_Optionssoot_modulepath_widget() {
 		return Input_Optionssoot_modulepath_widget;
-	}
-	
-	
-	
-	private StringOptionWidget Input_Optionssoot_bootclasspath_widget;
-	
-	private void setInput_Optionssoot_bootclasspath_widget(StringOptionWidget widget) {
-		Input_Optionssoot_bootclasspath_widget = widget;
-	}
-	
-	public StringOptionWidget getInput_Optionssoot_bootclasspath_widget() {
-		return Input_Optionssoot_bootclasspath_widget;
 	}
 	
 	
@@ -8835,18 +8817,6 @@ public class PhaseOptionsDialog extends AbstractOptionsDialog implements Selecti
 		}
 
 		setInput_Optionssoot_modulepath_widget(new StringOptionWidget(editGroupInput_Options, SWT.NONE, new OptionData("Soot Modulepath",  "", "","soot-modulepath", "\nUse MODULEPATH as the list of directories in which Soot should \nsearch for classes. MODULEPATH should be a series of \ndirectories, separated by the path separator character for your \nsystem. If no modulepath is set on the command line, but the \nsystem property soot.module.path has been set, Soot uses its \nvalue as the modulepath. If neither the command line nor the \nsystem properties specify a Soot classpath, Soot falls back on a \ndefault modulepath jrt:.", defaultString)));
-		
-
-		defKey = ""+" "+""+" "+"bcp soot-bootclasspath";
-		defKey = defKey.trim();
-
-		if (isInDefList(defKey)) {
-			defaultString = getStringDef(defKey);	
-		} else {
-			defaultString = "";
-		}
-
-		setInput_Optionssoot_bootclasspath_widget(new StringOptionWidget(editGroupInput_Options, SWT.NONE, new OptionData("Soot Boot Classpath",  "", "","bcp soot-bootclasspath", "\n", defaultString)));
 		
 
 		defKey = ""+" "+""+" "+"android-jars";

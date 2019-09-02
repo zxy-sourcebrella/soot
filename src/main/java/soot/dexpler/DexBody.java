@@ -317,7 +317,6 @@ public class DexBody {
    */
   protected void extractDexInstructions(MethodImplementation code) {
     int address = 0;
-
     for (Instruction instruction : code.getInstructions()) {
       DexlibAbstractInstruction dexInstruction = fromInstruction(instruction, address);
       if (UseDexAsmLineNo)  dexInstruction.setLineNumber(address);
@@ -639,7 +638,6 @@ public class DexBody {
     if (options.keep_line_number()) {
       fixLineNumbers();
     }
-
 
     // At this point Jimple code is generated
     // Cleaning...
