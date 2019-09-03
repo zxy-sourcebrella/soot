@@ -26,6 +26,9 @@ import java.util.List;
 
 import soot.Immediate;
 import soot.IntType;
+import soot.FloatType;
+import soot.LongType;
+import soot.DoubleType;
 import soot.Local;
 import soot.Unit;
 import soot.UnitBox;
@@ -39,10 +42,14 @@ import soot.jimple.AddExpr;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
+import soot.jimple.Constant;
 import soot.jimple.ConvertToBaf;
 import soot.jimple.FieldRef;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.IntConstant;
+import soot.jimple.FloatConstant;
+import soot.jimple.LongConstant;
+import soot.jimple.DoubleConstant;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleToBafContext;
@@ -304,7 +311,23 @@ public class JAssignStmt extends AbstractDefinitionStmt implements AssignStmt {
       }
 
       public void caseLocal(final Local v) {
-        ((ConvertToBaf) rvalue).convertToBaf(context, out);
+        // NOTE hzh<huzhenghao@sbrella.com>: This is for Dex Compitability - as Constant 0 might
+        // be of any type. THis should not harm Java/Class as lvalue type always equals rvalue.
+        if (rvalue instanceof Constant && ((Constant)rvalue).equals(IntConstant.v(0))) {
+          if (v.getType() instanceof IntType) {
+            ((ConvertToBaf) IntConstant.v(0)).convertToBaf(context, out);
+          } else if (v.getType() instanceof FloatType) {
+            ((ConvertToBaf) FloatConstant.v(0)).convertToBaf(context, out);
+          } else if (v.getType() instanceof LongType) {
+            ((ConvertToBaf) LongConstant.v(0)).convertToBaf(context, out);
+          } else if (v.getType() instanceof DoubleType) {
+            ((ConvertToBaf) DoubleConstant.v(0)).convertToBaf(context, out);
+          } else {
+            ((ConvertToBaf) IntConstant.v(0)).convertToBaf(context, out);
+          }
+        } else {
+          ((ConvertToBaf) rvalue).convertToBaf(context, out);
+        }
 
         /*
          * Add the tags to the statement that COMPUTES the value, NOT to the statement that stores it.

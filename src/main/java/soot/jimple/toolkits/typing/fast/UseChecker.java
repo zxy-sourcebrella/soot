@@ -38,6 +38,7 @@ import soot.Scene;
 import soot.SootMethodRef;
 import soot.Type;
 import soot.Unit;
+import soot.UnknownType;
 import soot.Value;
 import soot.jimple.AbstractStmtSwitch;
 import soot.jimple.AddExpr;
@@ -333,7 +334,17 @@ public class UseChecker extends AbstractStmtSwitch {
         }
 
         if (at == null) {
-          at = et.makeArrayType();
+          if (et == null) {
+            // NOTE hzh<huzhenghao@sbrella.com>: Simply convert it to the lhs type
+            // Also skip if the left-hand side value type is unknown or bottom_type
+            if (tlhs instanceof UnknownType || tlhs instanceof BottomType) {
+              return;
+            }
+            // Else
+            at = tlhs.makeArrayType();
+          } else {
+            at = et.makeArrayType();
+          }
         }
       }
       Type trhs = ((ArrayType) at).getElementType();

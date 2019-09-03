@@ -32,6 +32,7 @@ import static soot.dexpler.instructions.InstructionFactory.fromInstruction;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,13 +53,17 @@ import org.jf.dexlib2.iface.MethodParameter;
 import org.jf.dexlib2.iface.TryBlock;
 import org.jf.dexlib2.iface.debug.DebugItem;
 import org.jf.dexlib2.iface.instruction.Instruction;
+import org.jf.dexlib2.immutable.debug.ImmutableEndLocal;
 import org.jf.dexlib2.immutable.debug.ImmutableLineNumber;
+import org.jf.dexlib2.immutable.debug.ImmutableRestartLocal;
+import org.jf.dexlib2.immutable.debug.ImmutableStartLocal;
 import org.jf.dexlib2.util.MethodUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import soot.Body;
 import soot.DoubleType;
+import soot.IntType;
 import soot.Local;
 import soot.LongType;
 import soot.Modifier;
@@ -84,37 +89,17 @@ import soot.dexpler.instructions.OdexInstruction;
 import soot.dexpler.instructions.PseudoInstruction;
 import soot.dexpler.instructions.RetypeableInstruction;
 import soot.dexpler.typing.DalvikTyper;
-import soot.jimple.AssignStmt;
-import soot.jimple.CastExpr;
-import soot.jimple.CaughtExceptionRef;
-import soot.jimple.ConditionExpr;
-import soot.jimple.Constant;
-import soot.jimple.DefinitionStmt;
-import soot.jimple.EqExpr;
-import soot.jimple.IfStmt;
-import soot.jimple.IntConstant;
-import soot.jimple.Jimple;
-import soot.jimple.JimpleBody;
-import soot.jimple.NeExpr;
-import soot.jimple.NullConstant;
-import soot.jimple.NumericConstant;
+import soot.jimple.*;
 import soot.jimple.internal.JIdentityStmt;
 import soot.jimple.toolkits.base.Aggregator;
-import soot.jimple.toolkits.scalar.ConditionalBranchFolder;
-import soot.jimple.toolkits.scalar.ConstantCastEliminator;
-import soot.jimple.toolkits.scalar.CopyPropagator;
-import soot.jimple.toolkits.scalar.DeadAssignmentEliminator;
-import soot.jimple.toolkits.scalar.FieldStaticnessCorrector;
-import soot.jimple.toolkits.scalar.IdentityCastEliminator;
-import soot.jimple.toolkits.scalar.IdentityOperationEliminator;
-import soot.jimple.toolkits.scalar.MethodStaticnessCorrector;
-import soot.jimple.toolkits.scalar.NopEliminator;
-import soot.jimple.toolkits.scalar.UnreachableCodeEliminator;
+import soot.jimple.toolkits.scalar.*;
 import soot.jimple.toolkits.typing.TypeAssigner;
 import soot.options.JBOptions;
 import soot.options.Options;
 import soot.tagkit.LineNumberTag;
 import soot.tagkit.SourceLineNumberTag;
+import soot.tagkit.Tag;
+import soot.toDex.Debug;
 import soot.toolkits.exceptions.TrapTightener;
 import soot.toolkits.scalar.LocalPacker;
 import soot.toolkits.scalar.LocalSplitter;
@@ -153,6 +138,28 @@ public class DexBody {
   protected final DexFile dexFile;
   protected final Method method;
 
+  class LocalDebug {
+    public int startAddress;
+    public int endAddress;
+    public int register;
+    public String name;
+    public Type type;
+    public String signature;
+
+    public LocalDebug(int sa, int ea, int reg, String nam, String ty, String sig) {
+      this.startAddress = sa;
+      this.endAddress = ea;
+      this.register = reg;
+      this.name = nam;
+      this.type = DexType.toSoot(ty);
+      this.signature = sig;
+    }
+  }
+
+  private boolean UseDexAsmLineNo = false;
+
+  private final Map<Integer, LinkedList<LocalDebug>> localDebugs;
+
   // detect array/instructions overlapping obfuscation
   protected List<PseudoInstruction> pseudoInstructionData = new ArrayList<PseudoInstruction>();
 
@@ -163,6 +170,29 @@ public class DexBody {
       if (fb <= a && a <= lb) {
         return pi;
       }
+    }
+    return null;
+  }
+
+  public void useDexAsmLineNo() { UseDexAsmLineNo = true; }
+
+  /**
+   * Get the Variable name in a valid scope defined by
+   * DebugInfo
+   *
+   * @param codeaddr
+   *            codeAddress of the instruction
+   * @param reg
+   *            register number
+   * @return variable name defined in the debuginfo, return
+   *        null if not found
+   */
+  public String getValidVarName(int codeaddr, int reg) {
+    LinkedList<LocalDebug> lds = localDebugs.get(reg);
+    if (lds == null)    return null;
+    for (LocalDebug ld : lds) {
+      if (codeaddr >= ld.startAddress && codeaddr <= ld.endAddress)
+        return ld.name;
     }
     return null;
   }
@@ -203,6 +233,8 @@ public class DexBody {
 
     instructions = new ArrayList<DexlibAbstractInstruction>();
     instructionAtAddress = new HashMap<Integer, DexlibAbstractInstruction>();
+    localDebugs = new HashMap<Integer, LinkedList<LocalDebug>>();
+
     registerLocals = new Local[numRegisters];
 
     extractDexInstructions(code);
@@ -214,17 +246,64 @@ public class DexBody {
     }
 
     for (DebugItem di : code.getDebugItems()) {
-      if (di instanceof ImmutableLineNumber) {
+      if (di instanceof ImmutableLineNumber && !UseDexAsmLineNo) {
         ImmutableLineNumber ln = (ImmutableLineNumber) di;
         DexlibAbstractInstruction ins = instructionAtAddress(ln.getCodeAddress());
         if (ins == null) {
-          // Debug.printDbg("Line number tag pointing to invalid
-          // offset: " + ln.getCodeAddress());
+          Debug.printDbg("Line number tag pointing to invalid offset: " + ln.getCodeAddress());
           continue;
         }
         ins.setLineNumber(ln.getLineNumber());
+      } else if (di instanceof ImmutableStartLocal
+              || di instanceof ImmutableRestartLocal) {
+        LinkedList<LocalDebug> lds;
+        int reg, codeAddr;
+        String type, signature, name;
+        if (di instanceof ImmutableStartLocal) {
+          ImmutableStartLocal sl = (ImmutableStartLocal) di;
+          reg = sl.getRegister();
+          codeAddr = sl.getCodeAddress();
+          name = sl.getName();
+          type = sl.getType();
+          signature = sl.getSignature();
+          lds = localDebugs.get(reg);
+        } else {
+          ImmutableRestartLocal sl = (ImmutableRestartLocal) di;
+          reg = sl.getRegister();
+          codeAddr = sl.getCodeAddress();
+          name = sl.getName();
+          type = sl.getType();
+          signature = sl.getSignature();
+          lds = localDebugs.get(reg);
+        }
+        if (lds == null) {
+          localDebugs.put(new Integer(reg),
+              new LinkedList<LocalDebug>(Arrays.asList(
+                      new LocalDebug(codeAddr, -1/* endAddress */,
+                          reg, name, type, signature))));
+        } else {
+          // This is a new Debug Entry
+          lds.add(new LocalDebug(codeAddr, -1/* endAddress */,
+                  reg, name, type, signature));
+        }
+        // System.out.println(method.getName()+" start local"+ Integer.toString(sl.getRegister()) + sl.getName() + ":" + sl.getType() +
+        // sl.getCodeAddress());
+      } else if (di instanceof ImmutableEndLocal) {
+        ImmutableEndLocal el = (ImmutableEndLocal) di;
+        LinkedList<LocalDebug> lds = localDebugs.get(el.getRegister());
+        if (lds == null || lds.isEmpty()) {
+          // Won't Reach Here: This DebugInfo is Out-of-Order
+          // System.out.println("OutOfOrder Local End");
+        } else {
+          lds.getLast().endAddress = el.getCodeAddress();
+        }
+        // System.out.println(method.getName()+" end local" + Integer.toString(el.getRegister()) + el.getName() + ":" + el.getType() +
+        // el.getCodeAddress());
       }
     }
+    // System.out.println(method.getName());
+    // for (LocalDebug ld : localDebugs.values())
+    // System.out.println(ld.register+":"+ld.startAddress+"-"+ld.endAddress+" "+ld.name+":"+ld.type);
 
     this.dexFile = dexFile;
     this.method = method;
@@ -240,6 +319,7 @@ public class DexBody {
     int address = 0;
     for (Instruction instruction : code.getInstructions()) {
       DexlibAbstractInstruction dexInstruction = fromInstruction(instruction, address);
+      if (UseDexAsmLineNo)  dexInstruction.setLineNumber(address);
       instructions.add(dexInstruction);
       instructionAtAddress.put(address, dexInstruction);
       address += instruction.getCodeUnits();
@@ -419,6 +499,10 @@ public class DexBody {
       int thisRegister = numRegisters - numParameterRegisters - 1;
 
       Local thisLocal = jimple.newLocal("$u" + thisRegister, unknownType); // generateLocal(UnknownType.v());
+      //thisLocal.setType(jBody.getMethod().getDeclaringClass().getType());
+      if (localDebugs.containsKey(thisRegister)) {
+        thisLocal.setName("this");
+      }
       jBody.getLocals().add(thisLocal);
 
       registerLocals[thisRegister] = thisLocal;
@@ -457,6 +541,9 @@ public class DexBody {
         }
 
         Local gen = jimple.newLocal(localName, localType);
+        if (localDebugs.containsKey(parameterRegister)) {
+          gen.setName(localDebugs.get(parameterRegister).getFirst().name);
+        }
         jBody.getLocals().add(gen);
 
         registerLocals[parameterRegister] = gen;
@@ -477,6 +564,9 @@ public class DexBody {
           // may only use UnknownType here because the local may be reused with a different 
           // type later (before splitting)
           Local g = jimple.newLocal("$u" + parameterRegister, unknownType);
+          if (localDebugs.containsKey(parameterRegister)) {
+            g.setName(localDebugs.get(parameterRegister).getFirst().name);
+          }
           jBody.getLocals().add(g);
           registerLocals[parameterRegister] = g;
         }
@@ -488,6 +578,10 @@ public class DexBody {
 
     for (int i = 0; i < (numRegisters - numParameterRegisters - (isStatic ? 0 : 1)); i++) {
       registerLocals[i] = jimple.newLocal("$u" + i, unknownType);
+      if (localDebugs.containsKey(i)) {
+        registerLocals[i].setName(localDebugs.get(i).getFirst().name);
+        //registerLocals[i].setType(localDebugs.get(i).getFirst().type);
+      }
       jBody.getLocals().add(registerLocals[i]);
     }
 
@@ -522,6 +616,7 @@ public class DexBody {
         dangling.finalize(this, instruction);
         dangling = null;
       }
+      //restoreRegSnapshot(instruction.getCodeAddress());
       instruction.jimplify(this);
       if (instruction.getLineNumber() > 0) {
         prevLineNumber = instruction.getLineNumber();
@@ -551,6 +646,7 @@ public class DexBody {
     // registerLocals = null;
     // storeResultLocal = null;
     instructionAtAddress.clear();
+    // localDebugs.clear();
     // localGenerator = null;
     deferredInstructions = null;
     // instructionsToRetype = null;
@@ -586,12 +682,11 @@ public class DexBody {
 
     // Remove dead code and the corresponding locals before assigning types
     getUnreachableCodeEliminator().transform(jBody);
-    DeadAssignmentEliminator.v().transform(jBody);
+    // DeadAssignmentEliminator.v().transform(jBody);
     UnusedLocalEliminator.v().transform(jBody);
 
-    for (RetypeableInstruction i : instructionsToRetype) {
-      i.retype(jBody);
-    }
+    for (RetypeableInstruction i : instructionsToRetype)
+     i.retype(jBody);
 
     // {
     // // remove instructions from instructions list
@@ -627,11 +722,11 @@ public class DexBody {
 
     } else {
       // t_num.start();
-      DexNumTransformer.v().transform(jBody);
+       DexNumTransformer.v().transform(jBody);
       // t_num.end();
 
       DexReturnValuePropagator.v().transform(jBody);
-      getCopyPopagator().transform(jBody);
+      // getCopyPopagator().transform(jBody);
 
       DexNullThrowTransformer.v().transform(jBody);
 
@@ -641,7 +736,7 @@ public class DexBody {
 
       DexIfTransformer.v().transform(jBody);
 
-      DeadAssignmentEliminator.v().transform(jBody);
+      // DeadAssignmentEliminator.v().transform(jBody);
       UnusedLocalEliminator.v().transform(jBody);
 
       // DexRefsChecker.v().transform(jBody);
@@ -658,6 +753,11 @@ public class DexBody {
     DexNullInstanceofTransformer.v().transform(jBody);
 
     TypeAssigner.v().transform(jBody);
+
+    // TypeAssigner.v().transform(jBody, "",  new HashMap<String, String>() {{
+    //   put("enabled", "true");
+    //   put("ignore-nullpointer-dereferences", "true");
+    // }});
 
     final RefType objectType = RefType.v("java.lang.Object");
     if (IDalvikTyper.ENABLE_DVKTYPER) {
@@ -758,9 +858,10 @@ public class DexBody {
 
     // We pack locals that are not used in overlapping regions. This may
     // again lead to unused locals which we have to remove.
-    LocalPacker.v().transform(jBody);
+    // LocalPacker.v().transform(jBody);
     UnusedLocalEliminator.v().transform(jBody);
-    PackManager.v().getTransform("jb.lns").apply(jBody);
+    // PackManager.v().getTransform("jb.lns").apply(jBody);
+    // LocalNameStandardizer.v().transform(jBody);
 
     // Some apps reference static fields as instance fields. We fix this
     // on the fly.
@@ -776,7 +877,7 @@ public class DexBody {
     TrapTightener.v().transform(jBody);
     TrapMinimizer.v().transform(jBody);
     // LocalSplitter.v().transform(jBody);
-    Aggregator.v().transform(jBody);
+    // Aggregator.v().transform(jBody);
     // UnusedLocalEliminator.v().transform(jBody);
     // TypeAssigner.v().transform(jBody);
     // LocalPacker.v().transform(jBody);
@@ -806,12 +907,12 @@ public class DexBody {
     // we might have gotten new dead assignments and unused locals through
     // copy propagation and unreachable code elimination, so we have to do
     // this again
-    DeadAssignmentEliminator.v().transform(jBody);
+    // DeadAssignmentEliminator.v().transform(jBody);
     UnusedLocalEliminator.v().transform(jBody);
     NopEliminator.v().transform(jBody);
 
     // Remove unnecessary chains of return statements
-    DexReturnPacker.v().transform(jBody);
+    // DexReturnPacker.v().transform(jBody);
 
     for (Unit u : jBody.getUnits()) {
       if (u instanceof AssignStmt) {
@@ -858,7 +959,7 @@ public class DexBody {
     }
     
     //Must be last to ensure local ordering does not change
-    PackManager.v().getTransform("jb.lns").apply(jBody);
+    // PackManager.v().getTransform("jb.lns").apply(jBody);
 
     // t_whole_jimplification.end();
 

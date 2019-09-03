@@ -591,10 +591,12 @@ public class Scene // extends AbstractHost
     // check that android.jar is not in classpath
     String androidJars = Options.v().android_jars();
     String forceAndroidJar = Options.v().force_android_jar();
+    /*
     if ((androidJars == null || androidJars.equals("")) && (forceAndroidJar == null || forceAndroidJar.equals(""))) {
       throw new RuntimeException("You are analyzing an Android application but did "
           + "not define android.jar. Options -android-jars or -force-android-jar should be used.");
     }
+    */
 
     // Get the platform JAR file. It either directly specified, or
     // we detect it from the target version of the APK we are
@@ -614,9 +616,8 @@ public class Scene // extends AbstractHost
       } else {
         androidAPIVersion = defaultSdkVersion;
       }
-    } else if (androidJars != null && !androidJars.isEmpty()) {
-      List<String> classPathEntries
-          = new LinkedList<String>(Arrays.asList(Options.v().soot_classpath().split(File.pathSeparator)));
+    } else /*if (androidJars != null && !androidJars.isEmpty())*/ {
+      List<String> classPathEntries = new LinkedList<String>(Arrays.asList(Options.v().soot_classpath().split(File.pathSeparator)));
       classPathEntries.addAll(Options.v().process_dir());
 
       String targetApk = "";
@@ -634,6 +635,10 @@ public class Scene // extends AbstractHost
           targetDexs.add(entry);
         }
       }
+
+      // hzh: return "" if android_jars not specified
+      if (androidJars == null || androidJars == "")
+          return "";
 
       // We need at least one file to process
       if (targetApk == null || targetApk.isEmpty()) {

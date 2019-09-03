@@ -462,6 +462,9 @@ public class TypeResolver {
     worklists.put(tg, wl);
 
     while (!sigma.isEmpty()) {
+      if (Thread.currentThread().isInterrupted()) {
+        throw new RuntimeException("Interrupted");
+      }
       tg = sigma.element();
       wl = worklists.get(tg);
       if (wl.isEmpty()) {

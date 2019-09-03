@@ -145,6 +145,10 @@ public abstract class DexlibAbstractInstruction {
     this.codeAddress = codeAddress;
   }
 
+  public int getCodeAddress() {
+    return lineNumber;
+  }
+
   public int getLineNumber() {
     return lineNumber;
   }
@@ -161,7 +165,9 @@ public abstract class DexlibAbstractInstruction {
    */
   protected void addTags(Host host) {
     Options options = Options.v();
+    // System.out.printf("Adding a tag; kln: %b\n", options.keep_line_number());
     if (options.keep_line_number() && lineNumber != -1) {
+      // System.out.printf("  line number is %d\n", lineNumber);
       host.addTag(new LineNumberTag(lineNumber));
       host.addTag(new SourceLineNumberTag(lineNumber));
     }

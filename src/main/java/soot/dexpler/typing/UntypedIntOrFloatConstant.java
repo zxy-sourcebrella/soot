@@ -83,7 +83,9 @@ public class UntypedIntOrFloatConstant extends UntypedConstant {
                        // integer
         return this.toIntConstant();
       }
-      throw new RuntimeException("error: expected Float type or Int-like type. Got " + t);
+      // NOTE hzh<huzhenghao@sbrella.com>: Convert All undecided to int
+      return this.toIntConstant();
+      // throw new RuntimeException("error: expected Float type or Int-like type. Got " + t);
     }
   }
 
