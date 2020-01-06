@@ -5,7 +5,7 @@
     <groupId>ca.mcgill.sable</groupId>
     <artifactId>soot</artifactId>
     <name>Soot - a J*va Optimization Framework</name>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0</version>
     <description>A Java Optimization Framework</description>
     <url>https://sable.github.io/soot/</url>
     <organization>
@@ -57,7 +57,7 @@
         <maven-resources-plugin.version>3.0.2</maven-resources-plugin.version>
         <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
         <maven-assembly-plugin.version>3.1.1</maven-assembly-plugin.version>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
@@ -71,7 +71,7 @@
         <checkstyle.file.path>${checkstyle.dir.path}/soot_checkstyle_checks.xml</checkstyle.file.path>
         <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
         <licence-check.failOnMissingHeader>true</licence-check.failOnMissingHeader>
-        <testcase.groups>categories.Java8Test</testcase.groups>
+        <testcase.groups.excluded>categories.Java9Test,categories.Java11Test</testcase.groups.excluded>
         <asm.version>7.1</asm.version>
     </properties>
     <build>
@@ -272,18 +272,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
-
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>
                         <artifactId>surefire-junit47</artifactId>
-                        <version>3.0.0-M3</version>
+                        <version>${maven-surefire-plugin.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>
                     <reuseForks>false</reuseForks>
                     <forkCount>1</forkCount>
-                    <groups>${testcase.groups}</groups>
+                    <excludedGroups>${testcase.groups.excluded}</excludedGroups>
                 </configuration>
                 <executions>
                     <execution>
@@ -464,26 +463,22 @@
         <dependency>
             <groupId>de.upb.cs.swt</groupId>
             <artifactId>axml</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>ca.mcgill.sable</groupId>
             <artifactId>polyglot</artifactId>
             <version>2006</version>
         </dependency>
-        <!-- Published from the github repo -->
-        <!-- Built by http://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/ -->
         <dependency>
             <groupId>de.upb.cs.swt</groupId>
             <artifactId>heros</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.0</version>
         </dependency>
-        <!-- Uploaded to http://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/
-            from the nightly build server -->
         <dependency>
             <groupId>ca.mcgill.sable</groupId>
             <artifactId>jasmin</artifactId>
-            <version>3.0.2-SNAPSHOT</version>
+            <version>3.0.2</version>
         </dependency>
         <!-- Logging dependencies -->
         <dependency>
@@ -518,26 +513,26 @@
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </snapshotRepository>
     </distributionManagement>
     <profiles>
         <profile>
             <id>Java8</id>
             <properties>
-                <testcase.groups>categories.Java8Test</testcase.groups>
+                <testcase.groups.excluded>categories.Java9Test,categories.Java11Test</testcase.groups.excluded>
             </properties>
         </profile>
         <profile>
             <id>Java9</id>
             <properties>
-                <testcase.groups>categories.Java9Test</testcase.groups>
+                <testcase.groups.excluded>categories.Java11Test</testcase.groups.excluded>
             </properties>
         </profile>
         <profile>
             <id>Java11</id>
             <properties>
-                <testcase.groups>categories.Java11Test</testcase.groups>
+                <testcase.groups.excluded></testcase.groups.excluded>
             </properties>
         </profile>
         <profile>

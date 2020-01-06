@@ -1,10 +1,10 @@
-package soot.asm.backend.targets;
+package soot;
 
 /*-
  * #%L
  * Soot - a J*va Optimization Framework
  * %%
- * Copyright (C) 1997 - 2018 Raja Vallée-Rai and others
+ * Copyright (C) 1997 - 1999 Raja Vallee-Rai
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -22,16 +22,18 @@ package soot.asm.backend.targets;
  * #L%
  */
 
-public class InstanceOfCasts {
-	public boolean isMeasurable(Object o) {
-		return o instanceof Measurable;
-	}
+/**
+ * Exception that is thrown when a field is accessed through an ambiguous name
+ * 
+ * @author Steven Arzt
+ *
+ */
+public class AmbiguousFieldException extends RuntimeException {
 
-	public Measurable[] convertMeasurableArray(Object[] o) {
-		if (o instanceof Measurable[]) {
-			return (Measurable[]) o;
-		}
-		return null;
-	}
+  private static final long serialVersionUID = -1713255335762612121L;
+
+  public AmbiguousFieldException(String fieldName, String className) {
+    super(String.format("Ambiguous field name %s in class %s", fieldName, className));
+  }
 
 }

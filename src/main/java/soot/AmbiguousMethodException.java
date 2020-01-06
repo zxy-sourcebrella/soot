@@ -1,10 +1,10 @@
-package soot.jimple.toolkit.callgraph;
+package soot;
 
 /*-
  * #%L
  * Soot - a J*va Optimization Framework
  * %%
- * Copyright (C) 2018 John Toman
+ * Copyright (C) 1997 - 1999 Raja Vallee-Rai
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -22,12 +22,18 @@ package soot.jimple.toolkit.callgraph;
  * #L%
  */
 
-public class C extends B {
-	public void invokeTarget2(final String x) {
-		
-	}
-	
-	public void doNotCall2(final B arg) {
-    
+/**
+ * Exception that is thrown when a method is accessed through an ambiguous name
+ * 
+ * @author Steven Arzt
+ *
+ */
+public class AmbiguousMethodException extends RuntimeException {
+
+  private static final long serialVersionUID = -3200937620978653123L;
+
+  public AmbiguousMethodException(String methodName, String className) {
+    super(String.format("Ambiguous method name %s in class %s", methodName, className));
   }
+
 }
